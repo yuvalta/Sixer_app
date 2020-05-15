@@ -37,6 +37,8 @@ public class FrontCamera extends SurfaceView implements SurfaceHolder.Callback {
     double facePositionFracWidth = 1;
     double facePositionFracHeight = 1;
 
+    CameraFrame cameraFrame;
+
     public FrontCamera(MainActivity context, android.hardware.Camera frontCamera) {
         super(context);
 
@@ -44,6 +46,8 @@ public class FrontCamera extends SurfaceView implements SurfaceHolder.Callback {
         _camera = frontCamera;
         surfaceHolder = getHolder();
         surfaceHolder.addCallback(this);
+
+        cameraFrame = new CameraFrame();
     }
 
     @Override
@@ -91,23 +95,26 @@ public class FrontCamera extends SurfaceView implements SurfaceHolder.Callback {
             _camera.setPreviewCallback(new Camera.PreviewCallback() {
                 @Override
                 public void onPreviewFrame(byte[] data, Camera camera) {
-                    Camera.Parameters parameters = camera.getParameters();
-                    int width = parameters.getPreviewSize().width;
-                    int height = parameters.getPreviewSize().height;
 
-                    Bitmap faceCrop;
+                    cameraFrame.createBitmapFromFrame(data, camera);
 
-                    int pixelValue;
-                    byte pixThresh;
-
-                    YuvImage yuv = new YuvImage(data, parameters.getPreviewFormat(), width, height, null);
-
-                    ByteArrayOutputStream out = new ByteArrayOutputStream();
-                    yuv.compressToJpeg(new Rect(0, 0, width, height), 10, out);
-
-                    byte[] bytes = out.toByteArray();
-
-                    final Bitmap fullFrame = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+//                    Camera.Parameters parameters = camera.getParameters();
+//                    int width = parameters.getPreviewSize().width;
+//                    int height = parameters.getPreviewSize().height;
+//
+//                    Bitmap faceCrop;
+//
+//                    int pixelValue;
+//                    int pixThresh;
+//
+//                    YuvImage yuv = new YuvImage(data, parameters.getPreviewFormat(), width, height, null);
+//
+//                    ByteArrayOutputStream out = new ByteArrayOutputStream();
+//                    yuv.compressToJpeg(new Rect(0, 0, width, height), 10, out);
+//
+//                    byte[] bytes = out.toByteArray();
+//
+//                    final Bitmap fullFrame = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
 
                     Point startPoint = new Point((int) (facePositionFracWidth * width) - (faceRectDimWidth / 2),
                             (int) (facePositionFracHeight * height) - (faceRectDimHeight / 2));
@@ -128,10 +135,11 @@ public class FrontCamera extends SurfaceView implements SurfaceHolder.Callback {
                             int B = (pixelValue & 0x0000ff) >> 0;
 
                             int grayLevel = (R + G + B) / 3;
+
                             if (grayLevel < THRESHOLD) {
-                                pixThresh = (byte) pixelValue;
+                                pixThresh = Color.BLUE;
                             } else {
-                                pixThresh = (byte) Color.WHITE;
+                                pixThresh = Color.WHITE;
                             }
                             faceCropPixelsArray[i] = pixThresh;
                         }
@@ -205,14 +213,14 @@ public class FrontCamera extends SurfaceView implements SurfaceHolder.Callback {
                     top = face.rect.top + FACE_OFFSET;
                     bottom = face.rect.bottom + FACE_OFFSET;
 
-                    double faceFracWidth = (right - left) / 2000.0; // size of face
-                    double faceFracHeight = (bottom - top) / 2000.0;
+                    double faceFracWidth = (right - left) / (2 * FACE_OFFSET); // size of face
+                    double faceFracHeight = (bottom - top) / (2 * FACE_OFFSET);
 
                     faceRectDimWidth = (int) (heightOfFrame * faceFracWidth) * 4; // size of face in the camera preview
                     faceRectDimHeight = (int) (widthOfFrame * faceFracHeight) * 4;
 
-                    facePositionFracWidth = ((left + right) / 2.0) / 2000.0;
-                    facePositionFracHeight = ((top + bottom) / 2.0) / 2000.0;
+                    facePositionFracWidth = ((left + right) / 2.0) / (2 * FACE_OFFSET);
+                    facePositionFracHeight = ((top + bottom) / 2.0) / (2 * FACE_OFFSET);
                 }
             }
         }
