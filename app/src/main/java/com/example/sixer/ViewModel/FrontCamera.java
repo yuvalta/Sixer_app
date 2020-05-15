@@ -1,26 +1,25 @@
-package com.example.sixer;
+package com.example.sixer.ViewModel;
 
 import android.app.Activity;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Point;
-import android.graphics.Rect;
-import android.graphics.YuvImage;
 import android.hardware.Camera;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.widget.Toast;
 
-import java.io.ByteArrayOutputStream;
+import com.example.sixer.CameraFrame;
+import com.example.sixer.View.MainActivity;
+
 import java.io.IOException;
 
 public class FrontCamera extends SurfaceView implements SurfaceHolder.Callback {
 
     public static String TAG = "UV";
-    public static int THRESHOLD = 100;
     public static int FACE_OFFSET = 1000;
 
     Camera _camera;
@@ -39,6 +38,8 @@ public class FrontCamera extends SurfaceView implements SurfaceHolder.Callback {
 
     CameraFrame cameraFrame;
 
+    boolean isFaceDetected = false;
+
     public FrontCamera(MainActivity context, android.hardware.Camera frontCamera) {
         super(context);
 
@@ -47,7 +48,7 @@ public class FrontCamera extends SurfaceView implements SurfaceHolder.Callback {
         surfaceHolder = getHolder();
         surfaceHolder.addCallback(this);
 
-        cameraFrame = new CameraFrame();
+        cameraFrame = new CameraFrame(context);
     }
 
     @Override
@@ -83,7 +84,6 @@ public class FrontCamera extends SurfaceView implements SurfaceHolder.Callback {
             return;
         }
 
-
         try {
             _camera.stopPreview();
             _camera.setPreviewDisplay(surfaceHolder);
@@ -95,64 +95,46 @@ public class FrontCamera extends SurfaceView implements SurfaceHolder.Callback {
             _camera.setPreviewCallback(new Camera.PreviewCallback() {
                 @Override
                 public void onPreviewFrame(byte[] data, Camera camera) {
+                    Bitmap thresholdCropOrDefault;
 
                     cameraFrame.createBitmapFromFrame(data, camera);
 
-//                    Camera.Parameters parameters = camera.getParameters();
-//                    int width = parameters.getPreviewSize().width;
-//                    int height = parameters.getPreviewSize().height;
-//
-//                    Bitmap faceCrop;
-//
-//                    int pixelValue;
-//                    int pixThresh;
-//
-//                    YuvImage yuv = new YuvImage(data, parameters.getPreviewFormat(), width, height, null);
-//
-//                    ByteArrayOutputStream out = new ByteArrayOutputStream();
-//                    yuv.compressToJpeg(new Rect(0, 0, width, height), 10, out);
-//
-//                    byte[] bytes = out.toByteArray();
-//
-//                    final Bitmap fullFrame = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                    Point startPoint = new Point((int) (facePositionFracWidth * cameraFrame.getWidth()) - (faceRectDimWidth / 2),
+                            (int) (facePositionFracHeight * cameraFrame.getHeight()) - (faceRectDimHeight / 2));
 
-                    Point startPoint = new Point((int) (facePositionFracWidth * width) - (faceRectDimWidth / 2),
-                            (int) (facePositionFracHeight * height) - (faceRectDimHeight / 2));
+                    cameraFrame.setStartPoint(startPoint);
 
-                    if (startPoint.x < fullFrame.getWidth() - 1 && startPoint.y < fullFrame.getHeight() - 1
-                            && startPoint.x > 0 && startPoint.y > 0) {
-                        faceCrop = Bitmap.createBitmap(fullFrame, startPoint.x, startPoint.y, faceRectDimWidth, faceRectDimHeight);
+                    if (cameraFrame.validateOverflowFrame(startPoint) /*&& isFaceDetected */) {
 
-                        // get all image pixels and iterate on it locally
-                        int faceCropPixelsArray[] = new int[faceRectDimWidth * faceRectDimHeight];
-                        faceCrop.getPixels(faceCropPixelsArray, 0, faceCrop.getWidth(), 0, 0, faceCrop.getWidth() - 1, faceCrop.getHeight() - 1);
-
-                        for (int i = 0; i < faceRectDimWidth * faceRectDimHeight - 1; i++) {
-                            pixelValue = faceCropPixelsArray[i];
-
-                            int R = (pixelValue & 0xff0000) >> 16;
-                            int G = (pixelValue & 0x00ff00) >> 8;
-                            int B = (pixelValue & 0x0000ff) >> 0;
-
-                            int grayLevel = (R + G + B) / 3;
-
-                            if (grayLevel < THRESHOLD) {
-                                pixThresh = Color.BLUE;
-                            } else {
-                                pixThresh = Color.WHITE;
-                            }
-                            faceCropPixelsArray[i] = pixThresh;
+                        try {
+                            cameraFrame.cropFace(faceRectDimWidth, faceRectDimHeight);
+                        } catch (Exception e) {
+                            Toast.makeText(_context, "Error on cropping face!", Toast.LENGTH_LONG).show();
+                            return;
                         }
-                        faceCrop.setPixels(faceCropPixelsArray, 0, faceCrop.getWidth(), 0, 0, faceCrop.getWidth(), faceCrop.getHeight());
+
+                        cameraFrame.setSizeOfCroppedFrame(faceRectDimWidth * faceRectDimHeight);
+
+                        try {
+                            // get all image pixels and iterate on it locally
+                            thresholdCropOrDefault = cameraFrame.Threshold();
+                            Log.i(TAG, "threshold is: " + cameraFrame.getAdaptiveThreshold());
+//                            _context.thresholdTextView.setText((int) cameraFrame.getAdaptiveThreshold());
+                        } catch (Exception e) {
+                            Toast.makeText(_context, "Error on threshold!", Toast.LENGTH_LONG).show();
+                            Log.e(TAG, e.getMessage());
+                            return;
+                        }
+
 
                     } else {
-                        faceCrop = fullFrame;
+                        thresholdCropOrDefault = cameraFrame.defaultFrame();
                     }
 
                     ((Activity) (_context)).runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            _context.sandBox.setImageBitmap(faceCrop);
+                            _context.sandBox.setImageBitmap(thresholdCropOrDefault);
                         }
                     });
                 }
@@ -203,6 +185,8 @@ public class FrontCamera extends SurfaceView implements SurfaceHolder.Callback {
 
             if (faces.length > 0) {
 
+                isFaceDetected = true;
+
                 int left, right, top, bottom;
 
                 for (Camera.Face face : faces) {
@@ -213,15 +197,17 @@ public class FrontCamera extends SurfaceView implements SurfaceHolder.Callback {
                     top = face.rect.top + FACE_OFFSET;
                     bottom = face.rect.bottom + FACE_OFFSET;
 
-                    double faceFracWidth = (right - left) / (2 * FACE_OFFSET); // size of face
-                    double faceFracHeight = (bottom - top) / (2 * FACE_OFFSET);
+                    double faceFracWidth = (right - left) / 2000.0; // size of face
+                    double faceFracHeight = (bottom - top) / 2000.0;
 
                     faceRectDimWidth = (int) (heightOfFrame * faceFracWidth) * 4; // size of face in the camera preview
                     faceRectDimHeight = (int) (widthOfFrame * faceFracHeight) * 4;
 
-                    facePositionFracWidth = ((left + right) / 2.0) / (2 * FACE_OFFSET);
-                    facePositionFracHeight = ((top + bottom) / 2.0) / (2 * FACE_OFFSET);
+                    facePositionFracWidth = ((left + right) / 2.0) / 2000.0;
+                    facePositionFracHeight = ((top + bottom) / 2.0) / 2000.0;
                 }
+            } else {
+                isFaceDetected = false;
             }
         }
     }

@@ -1,30 +1,37 @@
-package com.example.sixer;
+package com.example.sixer.View;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
 import android.os.Bundle;
+import android.telecom.VideoProfile;
 import android.util.Log;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.view.ViewCompat;
+
+import com.example.sixer.ViewModel.BackCamera;
+import com.example.sixer.ViewModel.FrontCamera;
+import com.example.sixer.R;
 
 
 public class MainActivity extends AppCompatActivity {
     private static final int MY_CAMERA_REQUEST_CODE = 100;
     private static final String TAG = "UV";
 
-    FrameLayout backCameraFrame;
-    FrameLayout frontCameraFrame;
+    public FrameLayout backCameraFrame;
+    public FrameLayout frontCameraFrame;
     public RelativeLayout faceRect;
 
     public Camera backCamera;
     public Camera frontCamera;
+
+    public TextView thresholdTextView;
 
     BackCamera backCameraActivity;
     FrontCamera frontCameraActivity;
@@ -41,6 +48,8 @@ public class MainActivity extends AppCompatActivity {
         backCameraFrame = findViewById(R.id.back_camera);
         frontCameraFrame = findViewById(R.id.front_camera);
         faceRect = findViewById(R.id.face_detector_rect);
+
+        thresholdTextView = findViewById(R.id.threshold_text_view);
 
         if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{Manifest.permission.CAMERA}, MY_CAMERA_REQUEST_CODE);

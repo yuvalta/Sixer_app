@@ -1,4 +1,4 @@
-package com.example.sixer;
+package com.example.sixer.ViewModel;
 
 import android.content.Context;
 import android.content.res.Configuration;
@@ -6,10 +6,10 @@ import android.hardware.Camera;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.widget.Toast;
+
+import com.example.sixer.View.MainActivity;
 
 import java.io.IOException;
-import java.util.List;
 
 public class BackCamera extends SurfaceView implements SurfaceHolder.Callback {
 
