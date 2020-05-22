@@ -13,6 +13,7 @@ import android.view.SurfaceView;
 import android.widget.Toast;
 
 import com.example.sixer.CameraFrame;
+import com.example.sixer.FrameAnalyzer;
 import com.example.sixer.View.MainActivity;
 
 import java.io.IOException;
@@ -33,10 +34,15 @@ public class FrontCamera extends SurfaceView implements SurfaceHolder.Callback {
     int widthOfFrame = 1;
     int heightOfFrame = 1;
 
+    int framesCounter;
+
+    Bitmap thresholdCropOrDefault;
+
     double facePositionFracWidth = 1;
     double facePositionFracHeight = 1;
 
     CameraFrame cameraFrame;
+    FrameAnalyzer frameAnalyzer;
 
     boolean isFaceDetected = false;
 
@@ -48,11 +54,13 @@ public class FrontCamera extends SurfaceView implements SurfaceHolder.Callback {
         surfaceHolder = getHolder();
         surfaceHolder.addCallback(this);
 
-        cameraFrame = new CameraFrame(context);
+        cameraFrame = new CameraFrame(context); // threshold image
+        frameAnalyzer = new FrameAnalyzer(context); // analyze image
     }
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
+
         setOrientation();
 
         _camera.setFaceDetectionListener(new FaceDetectionListener());
@@ -95,7 +103,6 @@ public class FrontCamera extends SurfaceView implements SurfaceHolder.Callback {
             _camera.setPreviewCallback(new Camera.PreviewCallback() {
                 @Override
                 public void onPreviewFrame(byte[] data, Camera camera) {
-                    Bitmap thresholdCropOrDefault;
 
                     cameraFrame.createBitmapFromFrame(data, camera);
 
@@ -103,8 +110,10 @@ public class FrontCamera extends SurfaceView implements SurfaceHolder.Callback {
                             (int) (facePositionFracHeight * cameraFrame.getHeight()) - (faceRectDimHeight / 2));
 
                     cameraFrame.setStartPoint(startPoint);
+                    frameAnalyzer.setFaceRectDimHeight(faceRectDimHeight);
+                    frameAnalyzer.setFaceRectDimWidth(faceRectDimWidth);
 
-                    if (cameraFrame.validateOverflowFrame(startPoint) /*&& isFaceDetected */) {
+                    if (cameraFrame.validateOverflowFrame(startPoint)) {
 
                         try {
                             cameraFrame.cropFace(faceRectDimWidth, faceRectDimHeight);
@@ -116,11 +125,14 @@ public class FrontCamera extends SurfaceView implements SurfaceHolder.Callback {
                         cameraFrame.setSizeOfCroppedFrame(faceRectDimWidth * faceRectDimHeight);
 
                         try {
-                            // get all image pixels and iterate on it locally
                             thresholdCropOrDefault = cameraFrame.Threshold();
+
+                            frameAnalyzer.Analyze(thresholdCropOrDefault);
+
+
                             Log.i(TAG, "threshold is: " + cameraFrame.getAdaptiveThreshold());
-//                            _context.thresholdTextView.setText((int) cameraFrame.getAdaptiveThreshold());
                         } catch (Exception e) {
+
                             Toast.makeText(_context, "Error on threshold!", Toast.LENGTH_LONG).show();
                             Log.e(TAG, e.getMessage());
                             return;
@@ -190,7 +202,6 @@ public class FrontCamera extends SurfaceView implements SurfaceHolder.Callback {
                 int left, right, top, bottom;
 
                 for (Camera.Face face : faces) {
-                    _context.faceRect.setVisibility(VISIBLE);
 
                     left = face.rect.left + FACE_OFFSET;
                     right = face.rect.right + FACE_OFFSET;

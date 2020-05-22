@@ -33,10 +33,15 @@ public class MainActivity extends AppCompatActivity {
 
     public TextView thresholdTextView;
 
-    BackCamera backCameraActivity;
-    FrontCamera frontCameraActivity;
+    public ImageView leftArrow;
+    public ImageView rightArrow;
+    public ImageView upArrow;
+    public ImageView downArrow;
 
     public ImageView sandBox;
+
+    BackCamera backCameraActivity;
+    FrontCamera frontCameraActivity;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,9 +52,13 @@ public class MainActivity extends AppCompatActivity {
 
         backCameraFrame = findViewById(R.id.back_camera);
         frontCameraFrame = findViewById(R.id.front_camera);
-        faceRect = findViewById(R.id.face_detector_rect);
 
         thresholdTextView = findViewById(R.id.threshold_text_view);
+
+        leftArrow = findViewById(R.id.left_arrow);
+        rightArrow = findViewById(R.id.right_arrow);
+        upArrow = findViewById(R.id.up_arrow);
+        downArrow = findViewById(R.id.down_arrow);
 
         if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{Manifest.permission.CAMERA}, MY_CAMERA_REQUEST_CODE);

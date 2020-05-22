@@ -13,14 +13,12 @@ import android.os.Build;
 import com.example.sixer.View.MainActivity;
 
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.NavigableMap;
-import java.util.OptionalDouble;
-import java.util.TreeMap;
 
 public class CameraFrame {
-    public static NavigableMap<Integer, Integer> map = new TreeMap<Integer, Integer>();
 
+    public static String TAG = "UV";
     public static int THRESHOLD = 100;
 
     Context _context;
@@ -28,8 +26,9 @@ public class CameraFrame {
     double adaptiveThreshold;
     int width;
     int height;
-
     int sizeOfCroppedFrame;
+    int framesCounter = 20;
+    int lastThresholdValue = 0;
 
     Bitmap faceCrop;
     Bitmap fullFrame;
@@ -38,11 +37,11 @@ public class CameraFrame {
 
     Point startPoint;
 
+    FrameAnalyzer frameAnalyzer;
+
 
     public CameraFrame(MainActivity context) {
         _context = context;
-
-//        initQuantMap();
     }
 
     public Bitmap createBitmapFromFrame(byte[] data, Camera camera) {
@@ -64,12 +63,6 @@ public class CameraFrame {
         return (startPoint.x < fullFrame.getWidth() - 1 && startPoint.y < fullFrame.getHeight() - 1 && startPoint.x > 0 && startPoint.y > 0);
     }
 
-    private void initQuantMap() { // quantize the adaptive threshold for better results
-        for (int i = 0; i < 256 ; i++) {
-            map.put(i % 10, i % 10);    // i...i+10 => i
-        }
-    }
-
     public Bitmap Threshold() {
         // get all image pixels and iterate on it locally
         int pixelValue;
@@ -89,10 +82,12 @@ public class CameraFrame {
 
             int grayLevel = (R + G + B) / 3;
 
-            if (grayLevel < adaptiveThreshold) {
-                pixThresh = Color.BLUE;
+            if (grayLevel <= adaptiveThreshold) {
+                pixThresh = 0;
+            } else if (grayLevel > adaptiveThreshold && grayLevel < adaptiveThreshold + adaptiveThreshold / 5) {
+                pixThresh = 1;
             } else {
-                pixThresh = Color.WHITE;
+                pixThresh = 2;
             }
             faceCropPixelsArray[i] = pixThresh;
         }
@@ -115,21 +110,22 @@ public class CameraFrame {
 
         int R = ((int) threshValTemp & 0xff0000) >> 16;
         int G = ((int) threshValTemp & 0x00ff00) >> 8;
-        int B = ((int) threshValTemp & 0x0000ff) >> 0;
+        int B = ((int) threshValTemp & 0x0000ff);
 
-        return /*quantizeThreshold*/((R + G + B) / 3);
+        return quantizeThreshold((R + G + B) / 3);
     }
 
     private double quantizeThreshold(int value) {
-
-
-        return map.floorEntry(value).getValue();
+        if (framesCounter++ >= 20) {
+            framesCounter = 0;
+            lastThresholdValue = (value / 10) * 10;
+            return lastThresholdValue;
+        }
+        return lastThresholdValue;
     }
 
     public Bitmap defaultFrame() {
-
         return fullFrame;
-
     }
 
     public void setStartPoint(Point startPoint) {
