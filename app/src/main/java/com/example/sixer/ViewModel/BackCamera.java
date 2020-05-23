@@ -2,11 +2,15 @@ package com.example.sixer.ViewModel;
 
 import android.content.Context;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
 import android.hardware.Camera;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.widget.Toast;
 
+import com.example.sixer.CameraFrame;
+import com.example.sixer.FrameAnalyzer;
 import com.example.sixer.View.MainActivity;
 
 import java.io.IOException;
@@ -20,6 +24,11 @@ public class BackCamera extends SurfaceView implements SurfaceHolder.Callback {
     SurfaceHolder surfaceHolder;
     Context _context;
 
+    CameraFrame cameraFrame;
+    FrameAnalyzer frameAnalyzer;
+
+    Bitmap thresholdBackFrame;
+
     public BackCamera(MainActivity context, android.hardware.Camera backCamera) {
         super(context);
 
@@ -27,6 +36,9 @@ public class BackCamera extends SurfaceView implements SurfaceHolder.Callback {
         _camera = backCamera;
         surfaceHolder = getHolder();
         surfaceHolder.addCallback(this);
+
+        cameraFrame = new CameraFrame(context); // threshold image
+        frameAnalyzer = new FrameAnalyzer(context); // analyze image
     }
 
     @Override
@@ -60,10 +72,37 @@ public class BackCamera extends SurfaceView implements SurfaceHolder.Callback {
             _camera.setPreviewDisplay(surfaceHolder);
             _camera.startPreview();
 
+            _camera.setPreviewCallback(new Camera.PreviewCallback() {
+                @Override
+                public void onPreviewFrame(byte[] data, Camera camera) {
+
+                    Bitmap frameBitmap = cameraFrame.createBitmapFromFrame(data, camera);
+
+                    try {
+                        cameraFrame.setFaceCrop(cameraFrame.getResizedBitmap(frameBitmap, 400, 200));
+                        cameraFrame.setSizeOfCroppedFrame(200 * 400);
+
+                    } catch (Exception e) {
+                        Toast.makeText(_context, "Error on cropping face!", Toast.LENGTH_LONG).show();
+                        return;
+                    }
+
+                    try {
+                        thresholdBackFrame = cameraFrame.Threshold();
+
+                    } catch (Exception e) {
+
+                        Toast.makeText(_context, "Error on threshold!", Toast.LENGTH_LONG).show();
+                        return;
+                    }
+                }
+            });
+
         } catch (Exception e) {
             Log.d(TAG, "Error starting camera preview: " + e.getMessage());
         }
     }
+
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {

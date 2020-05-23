@@ -3,13 +3,13 @@ package com.example.sixer.ViewModel;
 import android.app.Activity;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.graphics.Point;
 import android.hardware.Camera;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.widget.CheckBox;
 import android.widget.Toast;
 
 import com.example.sixer.CameraFrame;
@@ -18,7 +18,7 @@ import com.example.sixer.View.MainActivity;
 
 import java.io.IOException;
 
-public class FrontCamera extends SurfaceView implements SurfaceHolder.Callback {
+public class FrontCamera extends SurfaceView implements SurfaceHolder.Callback{
 
     public static String TAG = "UV";
     public static int FACE_OFFSET = 1000;
@@ -117,27 +117,21 @@ public class FrontCamera extends SurfaceView implements SurfaceHolder.Callback {
 
                         try {
                             cameraFrame.cropFace(faceRectDimWidth, faceRectDimHeight);
+                            cameraFrame.setSizeOfCroppedFrame(faceRectDimWidth * faceRectDimHeight);
+
                         } catch (Exception e) {
                             Toast.makeText(_context, "Error on cropping face!", Toast.LENGTH_LONG).show();
                             return;
                         }
 
-                        cameraFrame.setSizeOfCroppedFrame(faceRectDimWidth * faceRectDimHeight);
-
                         try {
                             thresholdCropOrDefault = cameraFrame.Threshold();
+                            frameAnalyzer.analyze(thresholdCropOrDefault);
 
-                            frameAnalyzer.Analyze(thresholdCropOrDefault);
-
-
-                            Log.i(TAG, "threshold is: " + cameraFrame.getAdaptiveThreshold());
                         } catch (Exception e) {
-
                             Toast.makeText(_context, "Error on threshold!", Toast.LENGTH_LONG).show();
-                            Log.e(TAG, e.getMessage());
                             return;
                         }
-
 
                     } else {
                         thresholdCropOrDefault = cameraFrame.defaultFrame();
@@ -198,6 +192,7 @@ public class FrontCamera extends SurfaceView implements SurfaceHolder.Callback {
             if (faces.length > 0) {
 
                 isFaceDetected = true;
+                //_context.faceDetectedCheckBox.setChecked(true);
 
                 int left, right, top, bottom;
 
@@ -218,6 +213,7 @@ public class FrontCamera extends SurfaceView implements SurfaceHolder.Callback {
                     facePositionFracHeight = ((top + bottom) / 2.0) / 2000.0;
                 }
             } else {
+                //_context.faceDetectedCheckBox.setChecked(true);
                 isFaceDetected = false;
             }
         }

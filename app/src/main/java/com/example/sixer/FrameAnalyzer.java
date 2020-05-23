@@ -1,7 +1,6 @@
 package com.example.sixer;
 
 import android.app.Activity;
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.view.View;
 
@@ -39,15 +38,15 @@ public class FrameAnalyzer {
         return faceGridArray;
     }
 
-    public int[] CalcWeightsOfFaceGrid(Bitmap[] faceGridArray) {
+    public int[] calcWeightsOfFaceGrid(Bitmap[] faceGridArray) {
         for (int i = 0; i < faceGridArray.length; i++) {
-            faceGridWeights[i] = CalcCellWeight(faceGridArray[i]);
+            faceGridWeights[i] = calcCellWeight(faceGridArray[i]);
         }
 
         return faceGridWeights;
     }
 
-    private int CalcCellWeight(Bitmap cell) {
+    private int calcCellWeight(Bitmap cell) {
         int pixelArray[] = new int[cell.getWidth() * cell.getHeight()];
         cell.getPixels(pixelArray, 0, cell.getWidth(), 0, 0, cell.getWidth() - 1, cell.getHeight() - 1);
 
@@ -72,9 +71,9 @@ public class FrameAnalyzer {
         this.oneThirdFaceRectDimHeight = faceRectDimHeight / 3;
     }
 
-    public void Analyze(Bitmap thresholdCropOrDefault) {
+    public void analyze(Bitmap thresholdCropOrDefault) {
 
-        int[] weightsArray = CalcWeightsOfFaceGrid(splitBitmap(thresholdCropOrDefault));
+        int[] weightsArray = calcWeightsOfFaceGrid(splitBitmap(thresholdCropOrDefault));
 
         if (weightsArray[1] > weightsArray[7]) {
 

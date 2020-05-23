@@ -6,6 +6,7 @@ import android.hardware.Camera;
 import android.os.Bundle;
 import android.telecom.VideoProfile;
 import android.util.Log;
+import android.widget.CheckBox;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -18,6 +19,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.sixer.ViewModel.BackCamera;
 import com.example.sixer.ViewModel.FrontCamera;
 import com.example.sixer.R;
+
+import static com.example.sixer.R.id.face_detected;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -37,8 +40,9 @@ public class MainActivity extends AppCompatActivity {
     public ImageView rightArrow;
     public ImageView upArrow;
     public ImageView downArrow;
-
     public ImageView sandBox;
+
+    public CheckBox faceDetectedCheckBox;
 
     BackCamera backCameraActivity;
     FrontCamera frontCameraActivity;
@@ -59,6 +63,8 @@ public class MainActivity extends AppCompatActivity {
         rightArrow = findViewById(R.id.right_arrow);
         upArrow = findViewById(R.id.up_arrow);
         downArrow = findViewById(R.id.down_arrow);
+
+        faceDetectedCheckBox = findViewById(face_detected);
 
         if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{Manifest.permission.CAMERA}, MY_CAMERA_REQUEST_CODE);

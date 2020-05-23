@@ -4,20 +4,22 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
 import android.hardware.Camera;
-import android.os.Build;
 
 import com.example.sixer.View.MainActivity;
 
 import java.io.ByteArrayOutputStream;
-import java.util.ArrayList;
 import java.util.Arrays;
 
 public class CameraFrame {
 
+    private static final int FRAME_OPTIMIZER = 10;
+    private static final int MAX_THRESHOLD = 175;
+    private static final int MIN_THRESHOLD = 80;
     public static String TAG = "UV";
     public static int THRESHOLD = 100;
 
@@ -35,7 +37,7 @@ public class CameraFrame {
 
     Camera _camera;
 
-    Point startPoint;
+    Point startPoint = new Point(0, 0);
 
     FrameAnalyzer frameAnalyzer;
 
@@ -63,7 +65,7 @@ public class CameraFrame {
         return (startPoint.x < fullFrame.getWidth() - 1 && startPoint.y < fullFrame.getHeight() - 1 && startPoint.x > 0 && startPoint.y > 0);
     }
 
-    public Bitmap Threshold() {
+    public Bitmap Threshold() throws ThresholdException {
         // get all image pixels and iterate on it locally
         int pixelValue;
         int pixThresh;
@@ -83,11 +85,11 @@ public class CameraFrame {
             int grayLevel = (R + G + B) / 3;
 
             if (grayLevel <= adaptiveThreshold) {
-                pixThresh = 0;
-            } else if (grayLevel > adaptiveThreshold && grayLevel < adaptiveThreshold + adaptiveThreshold / 5) {
                 pixThresh = 1;
+            } else if (grayLevel > adaptiveThreshold && grayLevel < adaptiveThreshold + adaptiveThreshold / 5) {
+                pixThresh = 10;
             } else {
-                pixThresh = 2;
+                pixThresh = 20;
             }
             faceCropPixelsArray[i] = pixThresh;
         }
@@ -98,15 +100,8 @@ public class CameraFrame {
 
     private double calcAdaptiveThreshold(int[] faceCropPixelsArray) {
         double threshValTemp;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) { // can be more efficient
-            threshValTemp = (Arrays.stream(faceCropPixelsArray).average()).getAsDouble();
-        } else { // for lower versions then 24
-            double sum = 0;
-            for (int pixelVal : faceCropPixelsArray) {
-                sum += pixelVal;
-            }
-            threshValTemp = (sum / faceCropPixelsArray.length);
-        }
+
+        threshValTemp = (Arrays.stream(faceCropPixelsArray).average()).getAsDouble();
 
         int R = ((int) threshValTemp & 0xff0000) >> 16;
         int G = ((int) threshValTemp & 0x00ff00) >> 8;
@@ -116,12 +111,30 @@ public class CameraFrame {
     }
 
     private double quantizeThreshold(int value) {
-        if (framesCounter++ >= 20) {
-            framesCounter = 0;
-            lastThresholdValue = (value / 10) * 10;
-            return lastThresholdValue;
+        if (framesCounter++ >= FRAME_OPTIMIZER) {
+            if (value < MAX_THRESHOLD && value > MIN_THRESHOLD) {
+                framesCounter = 0;
+                lastThresholdValue = (value / 10) * 10;
+                return lastThresholdValue;
+            }
         }
         return lastThresholdValue;
+    }
+
+    public Bitmap getResizedBitmap(Bitmap bm, int newWidth, int newHeight) {
+        int width = bm.getWidth();
+        int height = bm.getHeight();
+        float scaleWidth = ((float) newWidth) / width;
+        float scaleHeight = ((float) newHeight) / height;
+        // CREATE A MATRIX FOR THE MANIPULATION
+        Matrix matrix = new Matrix();
+        // RESIZE THE BIT MAP
+        matrix.postScale(scaleWidth, scaleHeight);
+
+        // "RECREATE" THE NEW BITMAP
+        Bitmap resizedBitmap = Bitmap.createBitmap(
+                bm, 0, 0, width, height, matrix, false);
+        return resizedBitmap;
     }
 
     public Bitmap defaultFrame() {
@@ -149,7 +162,15 @@ public class CameraFrame {
         return height;
     }
 
+    public void setFaceCrop(Bitmap faceCrop) {
+        this.faceCrop = faceCrop;
+    }
+
     public double getAdaptiveThreshold() {
         return adaptiveThreshold;
+    }
+
+    private class ThresholdException extends Exception {
+
     }
 }
