@@ -1,5 +1,6 @@
 package com.example.sixer.ViewModel;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
@@ -22,7 +23,7 @@ public class BackCamera extends SurfaceView implements SurfaceHolder.Callback {
     public Camera.Size _size;
     Camera _camera;
     SurfaceHolder surfaceHolder;
-    Context _context;
+    MainActivity _context;
 
     CameraFrame cameraFrame;
     FrameAnalyzer frameAnalyzer;
@@ -95,6 +96,13 @@ public class BackCamera extends SurfaceView implements SurfaceHolder.Callback {
                         Toast.makeText(_context, "Error on threshold!", Toast.LENGTH_LONG).show();
                         return;
                     }
+
+                    ((Activity) (_context)).runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            _context.sandBoxBack.setImageBitmap(thresholdBackFrame);
+                        }
+                    });
                 }
             });
 

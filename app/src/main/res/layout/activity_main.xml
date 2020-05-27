@@ -70,12 +70,6 @@
         </GridLayout>
     </FrameLayout>
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/threshold_text_view" />
-
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -83,27 +77,37 @@
         android:orientation="horizontal">
 
         <CheckBox
+
             android:id="@+id/face_detected"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:checked="false" />
 
         <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="1">
+            android:layout_width="170dp"
+            android:layout_height="match_parent">
 
             <ImageView
                 android:scaleY="-1"
                 android:rotation="270"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:id="@+id/threshold" />
+                android:id="@+id/threshold_front" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <ImageView
+                android:rotation="90"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/threshold_back" />
         </RelativeLayout>
 
         <FrameLayout
-            android:layout_weight="1"
-            android:layout_width="match_parent"
+            android:layout_width="100dp"
             android:layout_height="match_parent"
             android:id="@+id/back_camera" />
     </LinearLayout>

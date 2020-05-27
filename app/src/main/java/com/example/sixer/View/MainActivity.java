@@ -4,7 +4,6 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
 import android.os.Bundle;
-import android.telecom.VideoProfile;
 import android.util.Log;
 import android.widget.CheckBox;
 import android.widget.FrameLayout;
@@ -40,7 +39,8 @@ public class MainActivity extends AppCompatActivity {
     public ImageView rightArrow;
     public ImageView upArrow;
     public ImageView downArrow;
-    public ImageView sandBox;
+    public ImageView sandBoxFront;
+    public ImageView sandBoxBack;
 
     public CheckBox faceDetectedCheckBox;
 
@@ -52,12 +52,11 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        sandBox = findViewById(R.id.threshold);
+        sandBoxFront = findViewById(R.id.threshold_front);
+        sandBoxBack = findViewById(R.id.threshold_back);
 
         backCameraFrame = findViewById(R.id.back_camera);
         frontCameraFrame = findViewById(R.id.front_camera);
-
-        thresholdTextView = findViewById(R.id.threshold_text_view);
 
         leftArrow = findViewById(R.id.left_arrow);
         rightArrow = findViewById(R.id.right_arrow);
@@ -71,8 +70,6 @@ public class MainActivity extends AppCompatActivity {
         } else {
             showCameras();
         }
-
-
     }
 
     public static Camera getCameraInstance(int cameraId) {

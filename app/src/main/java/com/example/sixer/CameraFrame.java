@@ -9,6 +9,8 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
 import android.hardware.Camera;
+import android.os.Build;
+import android.util.Log;
 
 import com.example.sixer.View.MainActivity;
 
@@ -18,8 +20,8 @@ import java.util.Arrays;
 public class CameraFrame {
 
     private static final int FRAME_OPTIMIZER = 10;
-    private static final int MAX_THRESHOLD = 175;
-    private static final int MIN_THRESHOLD = 80;
+    private static final int MAX_THRESHOLD = 160;
+    private static final int MIN_THRESHOLD = 90;
     public static String TAG = "UV";
     public static int THRESHOLD = 100;
 
@@ -78,18 +80,14 @@ public class CameraFrame {
         for (int i = 0; i < sizeOfCroppedFrame - 1; i++) {
             pixelValue = faceCropPixelsArray[i];
 
-            int R = (pixelValue & 0xff0000) >> 16;
-            int G = (pixelValue & 0x00ff00) >> 8;
-            int B = (pixelValue & 0x0000ff) >> 0;
-
-            int grayLevel = (R + G + B) / 3;
+            int grayLevel = convertToGrayScale(pixelValue);
 
             if (grayLevel <= adaptiveThreshold) {
-                pixThresh = 1;
+                pixThresh = Color.BLACK;
             } else if (grayLevel > adaptiveThreshold && grayLevel < adaptiveThreshold + adaptiveThreshold / 5) {
-                pixThresh = 10;
+                pixThresh = Color.GRAY;
             } else {
-                pixThresh = 20;
+                pixThresh = Color.WHITE;
             }
             faceCropPixelsArray[i] = pixThresh;
         }
@@ -98,16 +96,29 @@ public class CameraFrame {
         return faceCrop;
     }
 
+    private int convertToGrayScale(int pixelValue) {
+        int R = (pixelValue & 0xff0000) >> 16;
+        int G = (pixelValue & 0x00ff00) >> 8;
+        int B = (pixelValue & 0x0000ff) >> 0;
+
+        return (R + G + B) / 3;
+    }
+
     private double calcAdaptiveThreshold(int[] faceCropPixelsArray) {
-        double threshValTemp;
+        double threshValTemp = 0;
 
-        threshValTemp = (Arrays.stream(faceCropPixelsArray).average()).getAsDouble();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            threshValTemp = (Arrays.stream(faceCropPixelsArray).average()).getAsDouble();
+        }
+        else {
+            for (int pixel: faceCropPixelsArray) {
+                threshValTemp+=pixel;
 
-        int R = ((int) threshValTemp & 0xff0000) >> 16;
-        int G = ((int) threshValTemp & 0x00ff00) >> 8;
-        int B = ((int) threshValTemp & 0x0000ff);
+            }
+            threshValTemp /= faceCropPixelsArray.length;
+        }
 
-        return quantizeThreshold((R + G + B) / 3);
+        return quantizeThreshold(convertToGrayScale((int) threshValTemp));
     }
 
     private double quantizeThreshold(int value) {

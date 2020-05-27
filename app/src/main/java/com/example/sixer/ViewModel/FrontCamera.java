@@ -9,7 +9,6 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.widget.CheckBox;
 import android.widget.Toast;
 
 import com.example.sixer.CameraFrame;
@@ -140,7 +139,7 @@ public class FrontCamera extends SurfaceView implements SurfaceHolder.Callback{
                     ((Activity) (_context)).runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            _context.sandBox.setImageBitmap(thresholdCropOrDefault);
+                            _context.sandBoxFront.setImageBitmap(thresholdCropOrDefault);
                         }
                     });
                 }
@@ -192,7 +191,13 @@ public class FrontCamera extends SurfaceView implements SurfaceHolder.Callback{
             if (faces.length > 0) {
 
                 isFaceDetected = true;
-                //_context.faceDetectedCheckBox.setChecked(true);
+                ((Activity) (_context)).runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        _context.faceDetectedCheckBox.setChecked(true);
+                    }
+                });
+
 
                 int left, right, top, bottom;
 
@@ -213,9 +218,16 @@ public class FrontCamera extends SurfaceView implements SurfaceHolder.Callback{
                     facePositionFracHeight = ((top + bottom) / 2.0) / 2000.0;
                 }
             } else {
-                //_context.faceDetectedCheckBox.setChecked(true);
+                ((Activity) (_context)).runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        _context.faceDetectedCheckBox.setChecked(false);
+                    }
+                });
                 isFaceDetected = false;
             }
         }
     }
+
+
 }

@@ -2,6 +2,8 @@ package com.example.sixer;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
+import android.os.Build;
+import android.util.Log;
 import android.view.View;
 
 import com.example.sixer.View.MainActivity;
@@ -9,6 +11,7 @@ import com.example.sixer.View.MainActivity;
 import java.util.stream.IntStream;
 
 public class FrameAnalyzer {
+    private static final String TAG = "UV";
 
     private MainActivity _context;
 
@@ -50,7 +53,26 @@ public class FrameAnalyzer {
         int pixelArray[] = new int[cell.getWidth() * cell.getHeight()];
         cell.getPixels(pixelArray, 0, cell.getWidth(), 0, 0, cell.getWidth() - 1, cell.getHeight() - 1);
 
-        return IntStream.of(pixelArray).sum();
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            return convertToGrayScale(IntStream.of(pixelArray).sum());
+        }
+        else {
+            int sum = 0;
+            for (int pixel: pixelArray) {
+                sum+=pixel;
+
+            }
+            return convertToGrayScale(sum);
+        }
+    }
+
+    private int convertToGrayScale(int pixelValue) {
+        int R = (pixelValue & 0xff0000) >> 16;
+        int G = (pixelValue & 0x00ff00) >> 8;
+        int B = (pixelValue & 0x0000ff) >> 0;
+
+        return (R + G + B) / 3;
     }
 
     public Bitmap getImageToAnalyze() {
@@ -75,6 +97,9 @@ public class FrameAnalyzer {
 
         int[] weightsArray = calcWeightsOfFaceGrid(splitBitmap(thresholdCropOrDefault));
 
+        for (int i = 0; i < weightsArray.length; i++) {
+            Log.d(TAG, String.valueOf(i + " " + weightsArray[i]));
+        }
         if (weightsArray[1] > weightsArray[7]) {
 
             ((Activity) (_context)).runOnUiThread(new Runnable() {
