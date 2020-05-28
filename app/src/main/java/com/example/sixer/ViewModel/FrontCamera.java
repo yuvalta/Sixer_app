@@ -12,6 +12,7 @@ import android.view.SurfaceView;
 import android.widget.Toast;
 
 import com.example.sixer.CameraFrame;
+import com.example.sixer.CentroidCalculate;
 import com.example.sixer.FrameAnalyzer;
 import com.example.sixer.View.MainActivity;
 
@@ -32,8 +33,6 @@ public class FrontCamera extends SurfaceView implements SurfaceHolder.Callback{
 
     int widthOfFrame = 1;
     int heightOfFrame = 1;
-
-    int framesCounter;
 
     Bitmap thresholdCropOrDefault;
 

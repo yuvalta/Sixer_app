@@ -3,12 +3,13 @@ package com.example.sixer;
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.os.Build;
-import android.util.Log;
 import android.view.View;
 
 import com.example.sixer.View.MainActivity;
 
 import java.util.stream.IntStream;
+
+import static com.example.sixer.CentroidCalculate.*;
 
 public class FrameAnalyzer {
     private static final String TAG = "UV";
@@ -17,10 +18,10 @@ public class FrameAnalyzer {
 
     private Bitmap imageToAnalyze;
 
-    private int faceRectDimWidth;
-    private int faceRectDimHeight;
     private int oneThirdFaceRectDimWidth;
     private int oneThirdFaceRectDimHeight;
+
+    CentroidCalculate centroidCalculate;
 
     Bitmap[] faceGridArray = new Bitmap[9];
     int[] faceGridWeights = new int[9];
@@ -28,6 +29,7 @@ public class FrameAnalyzer {
 
     public FrameAnalyzer(MainActivity context) {
         _context = context;
+        centroidCalculate = new CentroidCalculate(); // centroid
     }
 
     public Bitmap[] splitBitmap(Bitmap picture) { // split image according to face grid (0-8)
@@ -50,17 +52,16 @@ public class FrameAnalyzer {
     }
 
     private int calcCellWeight(Bitmap cell) {
-        int pixelArray[] = new int[cell.getWidth() * cell.getHeight()];
+        int[] pixelArray = new int[cell.getWidth() * cell.getHeight()];
         cell.getPixels(pixelArray, 0, cell.getWidth(), 0, 0, cell.getWidth() - 1, cell.getHeight() - 1);
 
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             return convertToGrayScale(IntStream.of(pixelArray).sum());
-        }
-        else {
+        } else {
             int sum = 0;
-            for (int pixel: pixelArray) {
-                sum+=pixel;
+            for (int pixel : pixelArray) {
+                sum += pixel;
 
             }
             return convertToGrayScale(sum);
@@ -70,7 +71,7 @@ public class FrameAnalyzer {
     private int convertToGrayScale(int pixelValue) {
         int R = (pixelValue & 0xff0000) >> 16;
         int G = (pixelValue & 0x00ff00) >> 8;
-        int B = (pixelValue & 0x0000ff) >> 0;
+        int B = (pixelValue & 0x0000ff);
 
         return (R + G + B) / 3;
     }
@@ -84,12 +85,10 @@ public class FrameAnalyzer {
     }
 
     public void setFaceRectDimWidth(int faceRectDimWidth) {
-        this.faceRectDimWidth = faceRectDimWidth;
         this.oneThirdFaceRectDimWidth = faceRectDimWidth / 3;
     }
 
     public void setFaceRectDimHeight(int faceRectDimHeight) {
-        this.faceRectDimHeight = faceRectDimHeight;
         this.oneThirdFaceRectDimHeight = faceRectDimHeight / 3;
     }
 
@@ -97,48 +96,22 @@ public class FrameAnalyzer {
 
         int[] weightsArray = calcWeightsOfFaceGrid(splitBitmap(thresholdCropOrDefault));
 
-        for (int i = 0; i < weightsArray.length; i++) {
-            Log.d(TAG, String.valueOf(i + " " + weightsArray[i]));
-        }
-        if (weightsArray[1] > weightsArray[7]) {
-
-            ((Activity) (_context)).runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    _context.leftArrow.setVisibility(View.INVISIBLE);
-                    _context.rightArrow.setVisibility(View.VISIBLE);
-                }
-            });
-
-        } else {
-            ((Activity) (_context)).runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    _context.leftArrow.setVisibility(View.VISIBLE);
-                    _context.rightArrow.setVisibility(View.INVISIBLE);
-                }
-            });
+        for (DIRECTIONS directions : DIRECTIONS.values()) {
+            centroidCalculate.updatePointValue(directions, weightsArray[directions.ordinal()]);
         }
 
-        if (weightsArray[3] > weightsArray[5]) {
+//        centroidCalculate.updatePointValue(DIRECTIONS.LEFT, weightsArray[DIRECTIONS.LEFT.ordinal()]);
+//        centroidCalculate.updatePointValue(DIRECTIONS.TOP, weightsArray[DIRECTIONS.TOP.ordinal()]);
+//        centroidCalculate.updatePointValue(DIRECTIONS.BOTTOM, weightsArray[DIRECTIONS.BOTTOM.ordinal()]);
+//        centroidCalculate.updatePointValue(DIRECTIONS.RIGHT, weightsArray[DIRECTIONS.RIGHT.ordinal()]);
 
-            ((Activity) (_context)).runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    _context.upArrow.setVisibility(View.INVISIBLE);
-                    _context.downArrow.setVisibility(View.VISIBLE);
-                }
-            });
+        ((Activity) (_context)).runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
 
-        } else {
-            ((Activity) (_context)).runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    _context.upArrow.setVisibility(View.VISIBLE);
-                    _context.downArrow.setVisibility(View.INVISIBLE);
-                }
-            });
-        }
+            }
+        });
+
 
     }
 }

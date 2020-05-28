@@ -11,6 +11,7 @@ import android.view.SurfaceView;
 import android.widget.Toast;
 
 import com.example.sixer.CameraFrame;
+import com.example.sixer.CentroidCalculate;
 import com.example.sixer.FrameAnalyzer;
 import com.example.sixer.View.MainActivity;
 
@@ -27,6 +28,7 @@ public class BackCamera extends SurfaceView implements SurfaceHolder.Callback {
 
     CameraFrame cameraFrame;
     FrameAnalyzer frameAnalyzer;
+//    CentroidCalculate centroidCalculate;
 
     Bitmap thresholdBackFrame;
 
@@ -40,6 +42,7 @@ public class BackCamera extends SurfaceView implements SurfaceHolder.Callback {
 
         cameraFrame = new CameraFrame(context); // threshold image
         frameAnalyzer = new FrameAnalyzer(context); // analyze image
+//        centroidCalculate = new CentroidCalculate(); // centroid
     }
 
     @Override
