@@ -2,6 +2,7 @@ package com.example.sixer;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
+import android.graphics.Point;
 import android.os.Build;
 import android.view.View;
 
@@ -96,14 +97,14 @@ public class FrameAnalyzer {
 
         int[] weightsArray = calcWeightsOfFaceGrid(splitBitmap(thresholdCropOrDefault));
 
-        for (DIRECTIONS directions : DIRECTIONS.values()) {
+        for (DIRECTIONS directions : DIRECTIONS.values()) { // update the values of the square
             centroidCalculate.updatePointValue(directions, weightsArray[directions.ordinal()]);
         }
 
-//        centroidCalculate.updatePointValue(DIRECTIONS.LEFT, weightsArray[DIRECTIONS.LEFT.ordinal()]);
-//        centroidCalculate.updatePointValue(DIRECTIONS.TOP, weightsArray[DIRECTIONS.TOP.ordinal()]);
-//        centroidCalculate.updatePointValue(DIRECTIONS.BOTTOM, weightsArray[DIRECTIONS.BOTTOM.ordinal()]);
-//        centroidCalculate.updatePointValue(DIRECTIONS.RIGHT, weightsArray[DIRECTIONS.RIGHT.ordinal()]);
+        int centerX = centroidCalculate.findCenterPoint().x;
+        int centerY = centroidCalculate.findCenterPoint().y;
+
+
 
         ((Activity) (_context)).runOnUiThread(new Runnable() {
             @Override
