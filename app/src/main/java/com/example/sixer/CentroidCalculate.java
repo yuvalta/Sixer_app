@@ -55,7 +55,8 @@ public class CentroidCalculate {
 
         public void updateCorners(DIRECTIONS type, int cellValue) {
             Point addingPoint = new Point();
-            int calcPoint = calculatePoint(cellValue); // calc only x value for top && down, and calc y for left && right
+//            int calcPoint = calculatePoint(cellValue); // calc only x value for top && down, and calc y for left && right
+            int calcPoint = (cellValue); // calc only x value for top && down, and calc y for left && right
 
             switch (type) {
                 case BOTTOM:
@@ -83,11 +84,11 @@ public class CentroidCalculate {
             pointHashMap.put(type, addingPoint); // update point value
         }
 
-        public Point center() {
+        public Point center() { // this is good, now, TODO: think about a way to go to (0,0), maybe check in which Q we are and fix accordingly
             Point centerPoint = new Point();
 
-            centerPoint.x = (int) (Math.sqrt(Math.pow(pointHashMap.get(LEFT).x - pointHashMap.get(RIGHT).x, 2) + Math.pow(pointHashMap.get(LEFT).y - pointHashMap.get(RIGHT).y, 2)) / 2);
-            centerPoint.y = (int) (Math.sqrt(Math.pow(pointHashMap.get(TOP).x - pointHashMap.get(BOTTOM).x, 2) + Math.pow(pointHashMap.get(TOP).y - pointHashMap.get(BOTTOM).y, 2)) / 2);
+            centerPoint.x = Math.abs(pointHashMap.get(RIGHT).x + pointHashMap.get(LEFT).x) / 2;
+            centerPoint.y = Math.abs(pointHashMap.get(TOP).y + pointHashMap.get(BOTTOM).y) / 2;
 
             Log.i("UV", centerPoint.x + "," + centerPoint.y);
 

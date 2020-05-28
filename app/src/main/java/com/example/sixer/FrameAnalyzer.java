@@ -2,6 +2,7 @@ package com.example.sixer;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.Point;
 import android.os.Build;
 import android.view.View;
@@ -35,9 +36,9 @@ public class FrameAnalyzer {
 
     public Bitmap[] splitBitmap(Bitmap picture) { // split image according to face grid (0-8)
         int index = 0;
-        for (int i = 0; i < 3; i++) {
-            for (int j = 2; j >= 0; j--) {
-                faceGridArray[index++] = Bitmap.createBitmap(picture, j * oneThirdFaceRectDimWidth, i * oneThirdFaceRectDimHeight, oneThirdFaceRectDimWidth, oneThirdFaceRectDimHeight);
+        for (int i = 2; i >= 0; i--) {
+            for (int j = 0; j < 3; j++) {
+                faceGridArray[index++] = Bitmap.createBitmap(picture, i * oneThirdFaceRectDimWidth, j * oneThirdFaceRectDimHeight, oneThirdFaceRectDimWidth, oneThirdFaceRectDimHeight);
             }
         }
 
@@ -52,29 +53,33 @@ public class FrameAnalyzer {
         return faceGridWeights;
     }
 
-    private int calcCellWeight(Bitmap cell) {
+    private int calcCellWeight(Bitmap cell) { //TODO: think how to weight each cell
         int[] pixelArray = new int[cell.getWidth() * cell.getHeight()];
         cell.getPixels(pixelArray, 0, cell.getWidth(), 0, 0, cell.getWidth() - 1, cell.getHeight() - 1);
 
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            return convertToGrayScale(IntStream.of(pixelArray).sum());
-        } else {
-            int sum = 0;
-            for (int pixel : pixelArray) {
-                sum += pixel;
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+//            return convertToGrayScale(IntStream.of(pixelArray).sum());
+//        } else {
+        int sum = 0;
+        for (int pixel : pixelArray) {
 
-            }
-            return convertToGrayScale(sum);
+            sum += convertToGrayScale(pixel);
+
         }
+        return sum / 1000; // TODO: improve!
+//        }
     }
 
     private int convertToGrayScale(int pixelValue) {
-        int R = (pixelValue & 0xff0000) >> 16;
-        int G = (pixelValue & 0x00ff00) >> 8;
-        int B = (pixelValue & 0x0000ff);
 
-        return (R + G + B) / 3;
+        if (pixelValue == Color.BLACK) {
+            return 0;
+        } else if (pixelValue == Color.GRAY) {
+            return 2;
+        } else {
+            return 5;
+        }
     }
 
     public Bitmap getImageToAnalyze() {
@@ -103,7 +108,6 @@ public class FrameAnalyzer {
 
         int centerX = centroidCalculate.findCenterPoint().x;
         int centerY = centroidCalculate.findCenterPoint().y;
-
 
 
         ((Activity) (_context)).runOnUiThread(new Runnable() {

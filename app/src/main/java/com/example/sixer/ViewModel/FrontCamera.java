@@ -18,7 +18,7 @@ import com.example.sixer.View.MainActivity;
 
 import java.io.IOException;
 
-public class FrontCamera extends SurfaceView implements SurfaceHolder.Callback{
+public class FrontCamera extends SurfaceView implements SurfaceHolder.Callback {
 
     public static String TAG = "UV";
     public static int FACE_OFFSET = 1000;
@@ -123,8 +123,10 @@ public class FrontCamera extends SurfaceView implements SurfaceHolder.Callback{
                         }
 
                         try {
-                            thresholdCropOrDefault = cameraFrame.Threshold();
-                            frameAnalyzer.analyze(thresholdCropOrDefault);
+                            if (isFaceDetected) {
+                                thresholdCropOrDefault = cameraFrame.Threshold();
+                                frameAnalyzer.analyze(thresholdCropOrDefault);
+                            }
 
                         } catch (Exception e) {
                             Toast.makeText(_context, "Error on threshold!", Toast.LENGTH_LONG).show();
