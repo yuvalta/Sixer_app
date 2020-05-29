@@ -127,6 +127,7 @@ public class FrontCamera extends SurfaceView implements SurfaceHolder.Callback {
                             if (isFaceDetected ) {
                                 thresholdCropOrDefault = cameraFrame.Threshold(); // manipulate the frame
                                 if (!foundCenter) {
+                                    //test
                                     foundCenter = frameAnalyzer.analyze(thresholdCropOrDefault); // start analyze the frame
                                 }
                             }
