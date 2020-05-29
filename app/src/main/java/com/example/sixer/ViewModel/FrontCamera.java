@@ -43,6 +43,7 @@ public class FrontCamera extends SurfaceView implements SurfaceHolder.Callback {
     FrameAnalyzer frameAnalyzer;
 
     boolean isFaceDetected = false;
+    boolean foundCenter = false;
 
     public FrontCamera(MainActivity context, android.hardware.Camera frontCamera) {
         super(context);
@@ -114,8 +115,8 @@ public class FrontCamera extends SurfaceView implements SurfaceHolder.Callback {
                     if (cameraFrame.validateOverflowFrame(startPoint)) {
 
                         try {
-                            cameraFrame.cropFace(faceRectDimWidth, faceRectDimHeight);
-                            cameraFrame.setSizeOfCroppedFrame(faceRectDimWidth * faceRectDimHeight);
+                            cameraFrame.cropFace(faceRectDimWidth, faceRectDimHeight); // manipulate the frame
+                            cameraFrame.setSizeOfCroppedFrame(faceRectDimWidth * faceRectDimHeight); // manipulate the frame
 
                         } catch (Exception e) {
                             Toast.makeText(_context, "Error on cropping face!", Toast.LENGTH_LONG).show();
@@ -123,9 +124,11 @@ public class FrontCamera extends SurfaceView implements SurfaceHolder.Callback {
                         }
 
                         try {
-                            if (isFaceDetected) {
-                                thresholdCropOrDefault = cameraFrame.Threshold();
-                                frameAnalyzer.analyze(thresholdCropOrDefault);
+                            if (isFaceDetected ) {
+                                thresholdCropOrDefault = cameraFrame.Threshold(); // manipulate the frame
+                                if (!foundCenter) {
+                                    foundCenter = frameAnalyzer.analyze(thresholdCropOrDefault); // start analyze the frame
+                                }
                             }
 
                         } catch (Exception e) {

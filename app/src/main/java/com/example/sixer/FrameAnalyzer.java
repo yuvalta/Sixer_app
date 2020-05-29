@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.os.Build;
+import android.util.Log;
 import android.view.View;
 
 import com.example.sixer.View.MainActivity;
@@ -98,7 +99,7 @@ public class FrameAnalyzer {
         this.oneThirdFaceRectDimHeight = faceRectDimHeight / 3;
     }
 
-    public void analyze(Bitmap thresholdCropOrDefault) {
+    public boolean analyze(Bitmap thresholdCropOrDefault) {
 
         int[] weightsArray = calcWeightsOfFaceGrid(splitBitmap(thresholdCropOrDefault));
 
@@ -106,17 +107,56 @@ public class FrameAnalyzer {
             centroidCalculate.updatePointValue(directions, weightsArray[directions.ordinal()]);
         }
 
-        int centerX = centroidCalculate.findCenterPoint().x;
-        int centerY = centroidCalculate.findCenterPoint().y;
+        Point centerPoint = centroidCalculate.findCenterPoint();
+        Log.i("analyze", centerPoint.x + ",," + centerPoint.y);
 
+        DIRECTIONS correctionArrow = centroidCalculate.findCorrectionArrow(centerPoint);
 
-        ((Activity) (_context)).runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
+        _context.upArrow.setVisibility(View.INVISIBLE);
+        _context.downArrow.setVisibility(View.INVISIBLE);
+        _context.rightArrow.setVisibility(View.INVISIBLE);
+        _context.leftArrow.setVisibility(View.INVISIBLE);
+        _context.faceRect.setVisibility(View.INVISIBLE);
 
-            }
-        });
+        switch (correctionArrow) {
 
+            case TOP_LEFT:
+                _context.rightArrow.setVisibility(View.VISIBLE);
+                _context.downArrow.setVisibility(View.VISIBLE);
+                break;
+            case TOP:
+                _context.downArrow.setVisibility(View.VISIBLE);
+                break;
+            case TOP_RIGHT:
+                _context.leftArrow.setVisibility(View.VISIBLE);
+                _context.downArrow.setVisibility(View.VISIBLE);
+                break;
+            case LEFT:
+                _context.rightArrow.setVisibility(View.VISIBLE);
+                break;
+            case CENTER:
+                Log.i("UV", "center!");
+                if(centerPoint.equals(0,0)){
+                    return false;
+                }
+                _context.faceRect.setVisibility(View.VISIBLE);
+                return true;
+            case RIGHT:
+                _context.leftArrow.setVisibility(View.VISIBLE);
+                break;
+            case BOTTOM_LEFT:
+                _context.rightArrow.setVisibility(View.VISIBLE);
+                _context.upArrow.setVisibility(View.VISIBLE);
+                break;
+            case BOTTOM:
+                _context.upArrow.setVisibility(View.VISIBLE);
+                break;
+            case BOTTOM_RIGHT:
+                _context.leftArrow.setVisibility(View.VISIBLE);
+                _context.upArrow.setVisibility(View.VISIBLE);
+                break;
+        }
 
+        return false;
     }
 }

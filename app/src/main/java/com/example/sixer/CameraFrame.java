@@ -20,7 +20,7 @@ import java.util.Arrays;
 public class CameraFrame {
 
     private static final int FRAME_OPTIMIZER = 10;
-    private static final int MAX_THRESHOLD = 160;
+    private static final int MAX_THRESHOLD = 150;
     private static final int MIN_THRESHOLD = 90;
     public static String TAG = "UV";
     public static int THRESHOLD = 100;
@@ -109,10 +109,9 @@ public class CameraFrame {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             threshValTemp = (Arrays.stream(faceCropPixelsArray).average()).getAsDouble();
-        }
-        else {
-            for (int pixel: faceCropPixelsArray) {
-                threshValTemp+=pixel;
+        } else {
+            for (int pixel : faceCropPixelsArray) {
+                threshValTemp += pixel;
 
             }
             threshValTemp /= faceCropPixelsArray.length;
@@ -123,7 +122,7 @@ public class CameraFrame {
 
     private double quantizeThreshold(int value) {
         if (framesCounter++ >= FRAME_OPTIMIZER) {
-            if (value < MAX_THRESHOLD && value > MIN_THRESHOLD) {
+            if (value > MIN_THRESHOLD && value < MAX_THRESHOLD) {
                 framesCounter = 0;
                 lastThresholdValue = (value / 10) * 10;
                 return lastThresholdValue;
