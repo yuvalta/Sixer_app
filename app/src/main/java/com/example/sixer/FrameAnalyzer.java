@@ -1,25 +1,18 @@
 package com.example.sixer;
 
-import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Point;
-import android.os.Build;
 import android.util.Log;
 import android.view.View;
-
-import com.example.sixer.View.MainActivity;
-
-import java.util.stream.IntStream;
 
 import static com.example.sixer.CentroidCalculate.*;
 
 public class FrameAnalyzer {
     private static final String TAG = "UV";
+    private static final int NORMALIZE_FACTOR = 1000;
 
     private MainActivity _context;
-
-    private Bitmap imageToAnalyze;
 
     private double oneThirdFaceRectDimWidth;
     private double oneThirdFaceRectDimHeight;
@@ -28,7 +21,6 @@ public class FrameAnalyzer {
 
     Bitmap[] faceGridArray = new Bitmap[9];
     int[] faceGridWeights = new int[9];
-
 
     public FrameAnalyzer(MainActivity context) {
         _context = context;
@@ -54,22 +46,22 @@ public class FrameAnalyzer {
         return faceGridWeights;
     }
 
-    private int calcCellWeight(Bitmap cell) { //TODO: think how to weight each cell
+    /**
+     * calculate each cell weight according to the pixel color
+     * black == 0, gray == 5, white == 10
+     **/
+    private int calcCellWeight(Bitmap cell) {
         int[] pixelArray = new int[cell.getWidth() * cell.getHeight()];
         cell.getPixels(pixelArray, 0, cell.getWidth(), 0, 0, cell.getWidth() - 1, cell.getHeight() - 1);
 
-
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-//            return convertToGrayScale(IntStream.of(pixelArray).sum());
-//        } else {
         int sum = 0;
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+//            sum = (IntStream.of(convertToGrayScale(pixelArray)).sum());
+//        } else {
         for (int pixel : pixelArray) {
-
             sum += convertToGrayScale(pixel);
-
         }
-        return sum / 1000; // TODO: improve!
-//        }
+        return sum / NORMALIZE_FACTOR; // normalize by factor because values are too high and it should represent points
     }
 
     private int convertToGrayScale(int pixelValue) {
@@ -81,14 +73,6 @@ public class FrameAnalyzer {
         } else {
             return 10;
         }
-    }
-
-    public Bitmap getImageToAnalyze() {
-        return imageToAnalyze;
-    }
-
-    public void setImageToAnalyze(Bitmap imageToAnalyze) {
-        this.imageToAnalyze = imageToAnalyze;
     }
 
     public void setFaceRectDimWidth(double faceRectDimWidth) {

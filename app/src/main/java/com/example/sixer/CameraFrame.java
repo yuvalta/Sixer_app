@@ -10,9 +10,6 @@ import android.graphics.Rect;
 import android.graphics.YuvImage;
 import android.hardware.Camera;
 import android.os.Build;
-import android.util.Log;
-
-import com.example.sixer.View.MainActivity;
 
 import java.io.ByteArrayOutputStream;
 import java.util.Arrays;

@@ -1,4 +1,4 @@
-package com.example.sixer.View;
+package com.example.sixer;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
@@ -17,9 +17,8 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.sixer.ViewModel.BackCamera;
-import com.example.sixer.ViewModel.FrontCamera;
-import com.example.sixer.R;
+import com.example.sixer.Cameras.BackCamera;
+import com.example.sixer.Cameras.FrontCamera;
 
 import static com.example.sixer.R.id.face_detected;
 
