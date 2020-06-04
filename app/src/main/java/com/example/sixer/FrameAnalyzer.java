@@ -21,8 +21,8 @@ public class FrameAnalyzer {
 
     private Bitmap imageToAnalyze;
 
-    private int oneThirdFaceRectDimWidth;
-    private int oneThirdFaceRectDimHeight;
+    private double oneThirdFaceRectDimWidth;
+    private double oneThirdFaceRectDimHeight;
 
     CentroidCalculate centroidCalculate;
 
@@ -39,7 +39,7 @@ public class FrameAnalyzer {
         int index = 0;
         for (int i = 2; i >= 0; i--) {
             for (int j = 0; j < 3; j++) {
-                faceGridArray[index++] = Bitmap.createBitmap(picture, i * oneThirdFaceRectDimWidth, j * oneThirdFaceRectDimHeight, oneThirdFaceRectDimWidth, oneThirdFaceRectDimHeight);
+                faceGridArray[index++] = Bitmap.createBitmap(picture, i * (int) oneThirdFaceRectDimWidth, j * (int) oneThirdFaceRectDimHeight, (int) oneThirdFaceRectDimWidth, (int) oneThirdFaceRectDimHeight);
             }
         }
 
@@ -77,9 +77,9 @@ public class FrameAnalyzer {
         if (pixelValue == Color.BLACK) {
             return 0;
         } else if (pixelValue == Color.GRAY) {
-            return 2;
-        } else {
             return 5;
+        } else {
+            return 10;
         }
     }
 
@@ -91,11 +91,11 @@ public class FrameAnalyzer {
         this.imageToAnalyze = imageToAnalyze;
     }
 
-    public void setFaceRectDimWidth(int faceRectDimWidth) {
+    public void setFaceRectDimWidth(double faceRectDimWidth) {
         this.oneThirdFaceRectDimWidth = faceRectDimWidth / 3;
     }
 
-    public void setFaceRectDimHeight(int faceRectDimHeight) {
+    public void setFaceRectDimHeight(double faceRectDimHeight) {
         this.oneThirdFaceRectDimHeight = faceRectDimHeight / 3;
     }
 
@@ -136,7 +136,7 @@ public class FrameAnalyzer {
                 break;
             case CENTER:
                 Log.i("UV", "center!");
-                if(centerPoint.equals(0,0)){
+                if (centerPoint.equals(0, 0)) {
                     return false;
                 }
                 _context.faceRect.setVisibility(View.VISIBLE);

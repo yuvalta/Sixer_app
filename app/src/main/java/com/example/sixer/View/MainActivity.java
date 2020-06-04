@@ -5,8 +5,10 @@ import android.content.pm.PackageManager;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.CheckBox;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -43,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
     public ImageView sandBoxBack;
 
     public CheckBox faceDetectedCheckBox;
+    public ImageButton resetButton;
 
     BackCamera backCameraActivity;
     FrontCamera frontCameraActivity;
@@ -64,6 +67,8 @@ public class MainActivity extends AppCompatActivity {
         downArrow = findViewById(R.id.down_arrow);
 
         faceDetectedCheckBox = findViewById(face_detected);
+
+        resetButton = findViewById(R.id.reset);
 
         faceRect = findViewById(R.id.face_detector_rect);
 
@@ -110,6 +115,11 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(this, "camera permission denied", Toast.LENGTH_LONG).show();
             }
         }
+    }
+
+    public void resetBestPosition(View view) {
+        faceRect.setVisibility(View.INVISIBLE);
+        frontCameraActivity.foundCenter = false;
     }
 }
 

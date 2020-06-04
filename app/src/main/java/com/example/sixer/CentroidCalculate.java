@@ -87,7 +87,7 @@ public class CentroidCalculate {
             switch (type) {
                 case BOTTOM:
                     addingPoint.x = 0;
-                    addingPoint.y = -(calcPoint);
+                    addingPoint.y = -(calcPoint) * 2;
                     break;
                 case LEFT:
                     addingPoint.x = -(calcPoint);
