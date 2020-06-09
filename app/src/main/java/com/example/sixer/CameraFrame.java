@@ -4,12 +4,15 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.ImageFormat;
 import android.graphics.Matrix;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
 import android.hardware.Camera;
 import android.os.Build;
+
+import com.example.sixer.Activity.MainActivity;
 
 import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
@@ -40,13 +43,13 @@ public class CameraFrame {
 
     FrameAnalyzer frameAnalyzer;
 
-
     public CameraFrame(MainActivity context) {
         _context = context;
     }
 
     public Bitmap createBitmapFromFrame(byte[] data, Camera camera) {
         Camera.Parameters parameters = camera.getParameters();
+
         width = parameters.getPreviewSize().width;
         height = parameters.getPreviewSize().height;
 

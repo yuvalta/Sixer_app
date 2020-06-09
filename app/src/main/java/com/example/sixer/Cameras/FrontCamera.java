@@ -3,6 +3,7 @@ package com.example.sixer.Cameras;
 import android.app.Activity;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
+import android.graphics.ImageFormat;
 import android.graphics.Point;
 import android.hardware.Camera;
 import android.util.DisplayMetrics;
@@ -13,7 +14,7 @@ import android.widget.Toast;
 
 import com.example.sixer.CameraFrame;
 import com.example.sixer.FrameAnalyzer;
-import com.example.sixer.MainActivity;
+import com.example.sixer.Activity.MainActivity;
 
 import java.io.IOException;
 

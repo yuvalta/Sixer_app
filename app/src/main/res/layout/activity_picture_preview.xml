@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/container"
+    android:weightSum="10"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingTop="?attr/actionBarSize">
+
+    <ImageView
+        android:layout_weight="9"
+        android:id="@+id/picture_preview"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:rotation="270"
+        android:scaleY="-1" />
+
+    <LinearLayout
+        android:layout_weight="1"
+        android:id="@+id/bottom_bar"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:background="@color/colorPrimaryDark"
+        android:weightSum="3"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:src="@drawable/share"
+            android:id="@+id/share_button"/>
+
+        <ImageButton
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:src="@drawable/file_download"
+            android:id="@+id/save_button"/>
+
+        <ImageButton
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:src="@drawable/delete"
+            android:id="@+id/delete_button"/>
+
+
+
+    </LinearLayout>
+</LinearLayout>

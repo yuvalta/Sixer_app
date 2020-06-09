@@ -6,6 +6,8 @@ import android.graphics.Point;
 import android.util.Log;
 import android.view.View;
 
+import com.example.sixer.Activity.MainActivity;
+
 import static com.example.sixer.CentroidCalculate.*;
 
 public class FrameAnalyzer {

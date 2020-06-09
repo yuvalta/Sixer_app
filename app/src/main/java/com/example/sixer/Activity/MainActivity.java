@@ -1,8 +1,7 @@
-package com.example.sixer;
+package com.example.sixer.Activity;
 
 import android.Manifest;
-import android.app.Activity;
-import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -10,7 +9,6 @@ import android.hardware.Camera;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.widget.CheckBox;
@@ -26,12 +24,17 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.sixer.Cameras.BackCamera;
 import com.example.sixer.Cameras.FrontCamera;
+import com.example.sixer.R;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.UUID;
 
 import static com.example.sixer.R.id.face_detected;
+import static com.example.sixer.R.id.fill;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -103,18 +106,33 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(MainActivity.this, "click!", Toast.LENGTH_SHORT).show();
 
             Bitmap imageBitmap = frontCameraActivity.getDefaultFrame(); // open an activity with intent that shows the picture with x or v button
-            sandBoxBack.setImageBitmap(imageBitmap);
+
+            String fileName = saveBitmapToStorage(imageBitmap);
+
+            Intent in1 = new Intent(MainActivity.this, PicturePreviewActivity.class);
+            in1.putExtra("image", fileName);
+            startActivity(in1);
         }
     };
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 1 && resultCode == RESULT_OK) {
-            Bundle extras = data.getExtras();
-            Bitmap imageBitmap = (Bitmap) extras.get("data");
-            sandBoxBack.setImageBitmap(imageBitmap);
+    public String saveBitmapToStorage(Bitmap bitmap) {
+
+        String fileName = "bitmap.png";
+
+        try {
+            //Write file
+            FileOutputStream stream = this.openFileOutput(fileName, Context.MODE_PRIVATE);
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+
+            //Cleanup
+            stream.close();
+            bitmap.recycle();
+
+        } catch (Exception e) {
+            Toast.makeText(this, "error in saving picture!", Toast.LENGTH_SHORT).show();
         }
+
+        return fileName;
     }
 
     public static Camera getCameraInstance(int cameraId) {
@@ -144,7 +162,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == MY_CAMERA_REQUEST_CODE) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
