@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".View.MainActivity"
+    tools:context=".MainActivity"
     android:orientation="vertical">
 
     <FrameLayout
@@ -12,6 +12,7 @@
         android:layout_height="match_parent"
         android:layout_weight="1"
         android:layout_marginBottom="10dp">
+
 
         <FrameLayout
             android:layout_width="match_parent"
@@ -68,6 +69,17 @@
                 android:layout_row="2"
                 android:layout_column="1" />
         </GridLayout>
+
+        <RelativeLayout
+            android:id="@+id/face_detector_rect"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="0dp"
+            android:layout_marginRight="0dp"
+            android:layout_marginTop="0dp"
+            android:layout_marginBottom="0dp"
+            android:visibility="invisible"
+            android:background="@drawable/face_rect" />
     </FrameLayout>
 
     <LinearLayout
@@ -76,12 +88,25 @@
         android:layout_weight="4"
         android:orientation="horizontal">
 
-        <CheckBox
-
-            android:id="@+id/face_detected"
+        <LinearLayout
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:checked="false" />
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <CheckBox
+                android:id="@+id/face_detected"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="false" />
+
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/redo"
+                android:id="@+id/reset"
+                android:onClick="resetBestPosition"/>
+
+        </LinearLayout>
 
         <RelativeLayout
             android:layout_width="170dp"

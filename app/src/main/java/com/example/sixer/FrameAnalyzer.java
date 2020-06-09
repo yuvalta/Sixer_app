@@ -1,40 +1,37 @@
 package com.example.sixer;
 
-import android.app.Activity;
 import android.graphics.Bitmap;
-import android.os.Build;
+import android.graphics.Color;
+import android.graphics.Point;
 import android.util.Log;
 import android.view.View;
 
-import com.example.sixer.View.MainActivity;
-
-import java.util.stream.IntStream;
+import static com.example.sixer.CentroidCalculate.*;
 
 public class FrameAnalyzer {
     private static final String TAG = "UV";
+    private static final int NORMALIZE_FACTOR = 1000;
 
     private MainActivity _context;
 
-    private Bitmap imageToAnalyze;
+    private double oneThirdFaceRectDimWidth;
+    private double oneThirdFaceRectDimHeight;
 
-    private int faceRectDimWidth;
-    private int faceRectDimHeight;
-    private int oneThirdFaceRectDimWidth;
-    private int oneThirdFaceRectDimHeight;
+    CentroidCalculate centroidCalculate;
 
     Bitmap[] faceGridArray = new Bitmap[9];
     int[] faceGridWeights = new int[9];
 
-
     public FrameAnalyzer(MainActivity context) {
         _context = context;
+        centroidCalculate = new CentroidCalculate(); // centroid
     }
 
     public Bitmap[] splitBitmap(Bitmap picture) { // split image according to face grid (0-8)
         int index = 0;
-        for (int i = 0; i < 3; i++) {
-            for (int j = 2; j >= 0; j--) {
-                faceGridArray[index++] = Bitmap.createBitmap(picture, j * oneThirdFaceRectDimWidth, i * oneThirdFaceRectDimHeight, oneThirdFaceRectDimWidth, oneThirdFaceRectDimHeight);
+        for (int i = 2; i >= 0; i--) {
+            for (int j = 0; j < 3; j++) {
+                faceGridArray[index++] = Bitmap.createBitmap(picture, i * (int) oneThirdFaceRectDimWidth, j * (int) oneThirdFaceRectDimHeight, (int) oneThirdFaceRectDimWidth, (int) oneThirdFaceRectDimHeight);
             }
         }
 
@@ -49,96 +46,101 @@ public class FrameAnalyzer {
         return faceGridWeights;
     }
 
+    /**
+     * calculate each cell weight according to the pixel color
+     * black == 0, gray == 5, white == 10
+     **/
     private int calcCellWeight(Bitmap cell) {
-        int pixelArray[] = new int[cell.getWidth() * cell.getHeight()];
+        int[] pixelArray = new int[cell.getWidth() * cell.getHeight()];
         cell.getPixels(pixelArray, 0, cell.getWidth(), 0, 0, cell.getWidth() - 1, cell.getHeight() - 1);
 
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            return convertToGrayScale(IntStream.of(pixelArray).sum());
+        int sum = 0;
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+//            sum = (IntStream.of(convertToGrayScale(pixelArray)).sum());
+//        } else {
+        for (int pixel : pixelArray) {
+            sum += convertToGrayScale(pixel);
         }
-        else {
-            int sum = 0;
-            for (int pixel: pixelArray) {
-                sum+=pixel;
-
-            }
-            return convertToGrayScale(sum);
-        }
+        return sum / NORMALIZE_FACTOR; // normalize by factor because values are too high and it should represent points
     }
 
     private int convertToGrayScale(int pixelValue) {
-        int R = (pixelValue & 0xff0000) >> 16;
-        int G = (pixelValue & 0x00ff00) >> 8;
-        int B = (pixelValue & 0x0000ff) >> 0;
 
-        return (R + G + B) / 3;
+        if (pixelValue == Color.BLACK) {
+            return 0;
+        } else if (pixelValue == Color.GRAY) {
+            return 5;
+        } else {
+            return 10;
+        }
     }
 
-    public Bitmap getImageToAnalyze() {
-        return imageToAnalyze;
-    }
-
-    public void setImageToAnalyze(Bitmap imageToAnalyze) {
-        this.imageToAnalyze = imageToAnalyze;
-    }
-
-    public void setFaceRectDimWidth(int faceRectDimWidth) {
-        this.faceRectDimWidth = faceRectDimWidth;
+    public void setFaceRectDimWidth(double faceRectDimWidth) {
         this.oneThirdFaceRectDimWidth = faceRectDimWidth / 3;
     }
 
-    public void setFaceRectDimHeight(int faceRectDimHeight) {
-        this.faceRectDimHeight = faceRectDimHeight;
+    public void setFaceRectDimHeight(double faceRectDimHeight) {
         this.oneThirdFaceRectDimHeight = faceRectDimHeight / 3;
     }
 
-    public void analyze(Bitmap thresholdCropOrDefault) {
+    public boolean analyze(Bitmap thresholdCropOrDefault) {
 
         int[] weightsArray = calcWeightsOfFaceGrid(splitBitmap(thresholdCropOrDefault));
 
-        for (int i = 0; i < weightsArray.length; i++) {
-            Log.d(TAG, String.valueOf(i + " " + weightsArray[i]));
-        }
-        if (weightsArray[1] > weightsArray[7]) {
-
-            ((Activity) (_context)).runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    _context.leftArrow.setVisibility(View.INVISIBLE);
-                    _context.rightArrow.setVisibility(View.VISIBLE);
-                }
-            });
-
-        } else {
-            ((Activity) (_context)).runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    _context.leftArrow.setVisibility(View.VISIBLE);
-                    _context.rightArrow.setVisibility(View.INVISIBLE);
-                }
-            });
+        for (DIRECTIONS directions : DIRECTIONS.values()) { // update the values of the square
+            centroidCalculate.updatePointValue(directions, weightsArray[directions.ordinal()]);
         }
 
-        if (weightsArray[3] > weightsArray[5]) {
+        Point centerPoint = centroidCalculate.findCenterPoint();
+        Log.i("analyze", centerPoint.x + ",," + centerPoint.y);
 
-            ((Activity) (_context)).runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    _context.upArrow.setVisibility(View.INVISIBLE);
-                    _context.downArrow.setVisibility(View.VISIBLE);
-                }
-            });
+        DIRECTIONS correctionArrow = centroidCalculate.findCorrectionArrow(centerPoint);
 
-        } else {
-            ((Activity) (_context)).runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    _context.upArrow.setVisibility(View.VISIBLE);
-                    _context.downArrow.setVisibility(View.INVISIBLE);
+        _context.upArrow.setVisibility(View.INVISIBLE);
+        _context.downArrow.setVisibility(View.INVISIBLE);
+        _context.rightArrow.setVisibility(View.INVISIBLE);
+        _context.leftArrow.setVisibility(View.INVISIBLE);
+        _context.faceRect.setVisibility(View.INVISIBLE);
+
+        switch (correctionArrow) {
+
+            case TOP_LEFT:
+                _context.rightArrow.setVisibility(View.VISIBLE);
+                _context.downArrow.setVisibility(View.VISIBLE);
+                break;
+            case TOP:
+                _context.downArrow.setVisibility(View.VISIBLE);
+                break;
+            case TOP_RIGHT:
+                _context.leftArrow.setVisibility(View.VISIBLE);
+                _context.downArrow.setVisibility(View.VISIBLE);
+                break;
+            case LEFT:
+                _context.rightArrow.setVisibility(View.VISIBLE);
+                break;
+            case CENTER:
+                Log.i("UV", "center!");
+                if (centerPoint.equals(0, 0)) {
+                    return false;
                 }
-            });
+                _context.faceRect.setVisibility(View.VISIBLE);
+                return true;
+            case RIGHT:
+                _context.leftArrow.setVisibility(View.VISIBLE);
+                break;
+            case BOTTOM_LEFT:
+                _context.rightArrow.setVisibility(View.VISIBLE);
+                _context.upArrow.setVisibility(View.VISIBLE);
+                break;
+            case BOTTOM:
+                _context.upArrow.setVisibility(View.VISIBLE);
+                break;
+            case BOTTOM_RIGHT:
+                _context.leftArrow.setVisibility(View.VISIBLE);
+                _context.upArrow.setVisibility(View.VISIBLE);
+                break;
         }
 
+        return false;
     }
 }

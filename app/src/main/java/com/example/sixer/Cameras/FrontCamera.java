@@ -1,4 +1,4 @@
-package com.example.sixer.ViewModel;
+package com.example.sixer.Cameras;
 
 import android.app.Activity;
 import android.content.res.Configuration;
@@ -13,11 +13,11 @@ import android.widget.Toast;
 
 import com.example.sixer.CameraFrame;
 import com.example.sixer.FrameAnalyzer;
-import com.example.sixer.View.MainActivity;
+import com.example.sixer.MainActivity;
 
 import java.io.IOException;
 
-public class FrontCamera extends SurfaceView implements SurfaceHolder.Callback{
+public class FrontCamera extends SurfaceView implements SurfaceHolder.Callback {
 
     public static String TAG = "UV";
     public static int FACE_OFFSET = 1000;
@@ -33,8 +33,6 @@ public class FrontCamera extends SurfaceView implements SurfaceHolder.Callback{
     int widthOfFrame = 1;
     int heightOfFrame = 1;
 
-    int framesCounter;
-
     Bitmap thresholdCropOrDefault;
 
     double facePositionFracWidth = 1;
@@ -44,6 +42,7 @@ public class FrontCamera extends SurfaceView implements SurfaceHolder.Callback{
     FrameAnalyzer frameAnalyzer;
 
     boolean isFaceDetected = false;
+    public boolean foundCenter = false;
 
     public FrontCamera(MainActivity context, android.hardware.Camera frontCamera) {
         super(context);
@@ -59,7 +58,6 @@ public class FrontCamera extends SurfaceView implements SurfaceHolder.Callback{
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
-
         setOrientation();
 
         _camera.setFaceDetectionListener(new FaceDetectionListener());
@@ -99,50 +97,51 @@ public class FrontCamera extends SurfaceView implements SurfaceHolder.Callback{
 
             setViewParameters();
 
-            _camera.setPreviewCallback(new Camera.PreviewCallback() {
-                @Override
-                public void onPreviewFrame(byte[] data, Camera camera) {
+            _camera.setPreviewCallback((Camera.PreviewCallback) (data, camera) -> {
 
-                    cameraFrame.createBitmapFromFrame(data, camera);
+                cameraFrame.createBitmapFromFrame(data, camera);
 
-                    Point startPoint = new Point((int) (facePositionFracWidth * cameraFrame.getWidth()) - (faceRectDimWidth / 2),
-                            (int) (facePositionFracHeight * cameraFrame.getHeight()) - (faceRectDimHeight / 2));
+                Point startPoint = new Point((int) (facePositionFracWidth * cameraFrame.getWidth()) - (faceRectDimWidth / 2),
+                        (int) (facePositionFracHeight * cameraFrame.getHeight()) - (faceRectDimHeight / 2));
 
-                    cameraFrame.setStartPoint(startPoint);
-                    frameAnalyzer.setFaceRectDimHeight(faceRectDimHeight);
-                    frameAnalyzer.setFaceRectDimWidth(faceRectDimWidth);
+                cameraFrame.setStartPoint(startPoint);
+                frameAnalyzer.setFaceRectDimHeight(faceRectDimHeight);
+                frameAnalyzer.setFaceRectDimWidth(faceRectDimWidth);
 
-                    if (cameraFrame.validateOverflowFrame(startPoint)) {
+                if (cameraFrame.validateOverflowFrame(startPoint)) {
 
-                        try {
-                            cameraFrame.cropFace(faceRectDimWidth, faceRectDimHeight);
-                            cameraFrame.setSizeOfCroppedFrame(faceRectDimWidth * faceRectDimHeight);
+                    try {
+                        cameraFrame.cropFace(faceRectDimWidth, faceRectDimHeight); // manipulate the frame
+                        cameraFrame.setSizeOfCroppedFrame(faceRectDimWidth * faceRectDimHeight); // manipulate the frame
 
-                        } catch (Exception e) {
-                            Toast.makeText(_context, "Error on cropping face!", Toast.LENGTH_LONG).show();
-                            return;
-                        }
-
-                        try {
-                            thresholdCropOrDefault = cameraFrame.Threshold();
-                            frameAnalyzer.analyze(thresholdCropOrDefault);
-
-                        } catch (Exception e) {
-                            Toast.makeText(_context, "Error on threshold!", Toast.LENGTH_LONG).show();
-                            return;
-                        }
-
-                    } else {
-                        thresholdCropOrDefault = cameraFrame.defaultFrame();
+                    } catch (Exception e) {
+                        Toast.makeText(_context, "Error on cropping face!", Toast.LENGTH_LONG).show();
+                        return;
                     }
 
-                    ((Activity) (_context)).runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            _context.sandBoxFront.setImageBitmap(thresholdCropOrDefault);
+                    try {
+                        if (isFaceDetected) {
+                            thresholdCropOrDefault = cameraFrame.Threshold(); // manipulate the frame
+                            if (!foundCenter) {
+                                foundCenter = frameAnalyzer.analyze(thresholdCropOrDefault); // start analyze the frame
+                            }
                         }
-                    });
+
+                    } catch (Exception e) {
+                        Toast.makeText(_context, "Error on threshold!", Toast.LENGTH_LONG).show();
+                        return;
+                    }
+
+                } else {
+                    thresholdCropOrDefault = cameraFrame.defaultFrame();
                 }
+
+                ((Activity) (_context)).runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        _context.sandBoxFront.setImageBitmap(thresholdCropOrDefault);
+                    }
+                });
             });
 
         } catch (Exception e) {
@@ -198,7 +197,6 @@ public class FrontCamera extends SurfaceView implements SurfaceHolder.Callback{
                     }
                 });
 
-
                 int left, right, top, bottom;
 
                 for (Camera.Face face : faces) {
@@ -208,11 +206,11 @@ public class FrontCamera extends SurfaceView implements SurfaceHolder.Callback{
                     top = face.rect.top + FACE_OFFSET;
                     bottom = face.rect.bottom + FACE_OFFSET;
 
-                    double faceFracWidth = (right - left) / 2000.0; // size of face
-                    double faceFracHeight = (bottom - top) / 2000.0;
+                    double faceFracWidth = (right - left) / ((double) FACE_OFFSET * 2); // size of face
+                    double faceFracHeight = (bottom - top) / ((double) FACE_OFFSET * 2); // divided by FACE_OFFSET * 2 because 'face.rect' returns values between -1000 to 1000
 
                     faceRectDimWidth = (int) (heightOfFrame * faceFracWidth) * 4; // size of face in the camera preview
-                    faceRectDimHeight = (int) (widthOfFrame * faceFracHeight) * 4;
+                    faceRectDimHeight = (int) (widthOfFrame * faceFracHeight) * 3;
 
                     facePositionFracWidth = ((left + right) / 2.0) / 2000.0;
                     facePositionFracHeight = ((top + bottom) / 2.0) / 2000.0;

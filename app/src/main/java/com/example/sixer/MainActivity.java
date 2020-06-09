@@ -1,12 +1,14 @@
-package com.example.sixer.View;
+package com.example.sixer;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.CheckBox;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -15,9 +17,8 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.sixer.ViewModel.BackCamera;
-import com.example.sixer.ViewModel.FrontCamera;
-import com.example.sixer.R;
+import com.example.sixer.Cameras.BackCamera;
+import com.example.sixer.Cameras.FrontCamera;
 
 import static com.example.sixer.R.id.face_detected;
 
@@ -43,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
     public ImageView sandBoxBack;
 
     public CheckBox faceDetectedCheckBox;
+    public ImageButton resetButton;
 
     BackCamera backCameraActivity;
     FrontCamera frontCameraActivity;
@@ -64,6 +66,10 @@ public class MainActivity extends AppCompatActivity {
         downArrow = findViewById(R.id.down_arrow);
 
         faceDetectedCheckBox = findViewById(face_detected);
+
+        resetButton = findViewById(R.id.reset);
+
+        faceRect = findViewById(R.id.face_detector_rect);
 
         if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{Manifest.permission.CAMERA}, MY_CAMERA_REQUEST_CODE);
@@ -108,6 +114,11 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(this, "camera permission denied", Toast.LENGTH_LONG).show();
             }
         }
+    }
+
+    public void resetBestPosition(View view) {
+        faceRect.setVisibility(View.INVISIBLE);
+        frontCameraActivity.foundCenter = false;
     }
 }
 
