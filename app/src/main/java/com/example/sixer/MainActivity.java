@@ -1,9 +1,16 @@
 package com.example.sixer;
 
 import android.Manifest;
+import android.app.Activity;
+import android.content.ContentResolver;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.hardware.Camera;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.widget.CheckBox;
@@ -19,6 +26,10 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.sixer.Cameras.BackCamera;
 import com.example.sixer.Cameras.FrontCamera;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
+
+import java.io.File;
 
 import static com.example.sixer.R.id.face_detected;
 
@@ -49,6 +60,10 @@ public class MainActivity extends AppCompatActivity {
     BackCamera backCameraActivity;
     FrontCamera frontCameraActivity;
 
+    FloatingActionButton takePicFab;
+
+    Uri imageUri;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -71,10 +86,34 @@ public class MainActivity extends AppCompatActivity {
 
         faceRect = findViewById(R.id.face_detector_rect);
 
+        takePicFab = findViewById(R.id.take_picture_fab);
+
+        takePicFab.setOnClickListener(pictureOnClick);
+
         if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{Manifest.permission.CAMERA}, MY_CAMERA_REQUEST_CODE);
         } else {
             showCameras();
+        }
+    }
+
+    private View.OnClickListener pictureOnClick = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            Toast.makeText(MainActivity.this, "click!", Toast.LENGTH_SHORT).show();
+
+            Bitmap imageBitmap = frontCameraActivity.getDefaultFrame(); // open an activity with intent that shows the picture with x or v button
+            sandBoxBack.setImageBitmap(imageBitmap);
+        }
+    };
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 1 && resultCode == RESULT_OK) {
+            Bundle extras = data.getExtras();
+            Bitmap imageBitmap = (Bitmap) extras.get("data");
+            sandBoxBack.setImageBitmap(imageBitmap);
         }
     }
 

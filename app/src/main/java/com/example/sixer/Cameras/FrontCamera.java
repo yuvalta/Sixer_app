@@ -183,6 +183,10 @@ public class FrontCamera extends SurfaceView implements SurfaceHolder.Callback {
         }
     }
 
+    public Bitmap getDefaultFrame() {
+        return cameraFrame.defaultFrame();
+    }
+
     class FaceDetectionListener implements Camera.FaceDetectionListener {
         @Override
         public void onFaceDetection(Camera.Face[] faces, Camera camera) {
