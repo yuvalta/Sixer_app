@@ -22,14 +22,14 @@ public class CameraFrame {
     public static String TAG = "UV";
     public static int THRESHOLD = 100;
 
-    Context _context;
+    private Context _context;
 
-    double adaptiveThreshold;
-    int width;
-    int height;
-    int sizeOfCroppedFrame;
-    int framesCounter = 20;
-    int lastThresholdValue = 0;
+    private double adaptiveThreshold;
+    private int width;
+    private int height;
+    private int sizeOfCroppedFrame;
+    private int framesCounter = 2;
+    private int lastThresholdValue = 0;
 
     Bitmap faceCrop;
     Bitmap fullFrame;

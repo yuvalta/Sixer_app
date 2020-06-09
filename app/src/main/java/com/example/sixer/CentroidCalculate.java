@@ -20,7 +20,7 @@ import static com.example.sixer.CentroidCalculate.DIRECTIONS.TOP_RIGHT;
 public class CentroidCalculate {
 
     private static final int AXIS_LENGTH = 200;
-    private static final int GRAPH_THRESHOLD = 5;
+    private static final int GRAPH_THRESHOLD = 3;
 
 
     public static enum DIRECTIONS {
