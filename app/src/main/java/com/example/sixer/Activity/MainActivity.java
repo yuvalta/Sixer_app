@@ -141,6 +141,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        showCameras();
         showHideViews(false); // back to analyse mode
     }
 

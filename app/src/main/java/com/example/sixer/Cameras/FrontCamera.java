@@ -3,6 +3,8 @@ package com.example.sixer.Cameras;
 import android.app.Activity;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.graphics.Point;
 import android.hardware.Camera;
 import android.net.Uri;
@@ -12,7 +14,10 @@ import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.ViewGroup;
 import android.widget.Toast;
+
+import androidx.camera.core.CameraInfo;
 
 import com.example.sixer.CameraFrame;
 import com.example.sixer.FrameAnalyzer;
@@ -22,9 +27,14 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
+import static android.hardware.Camera.Parameters.FOCUS_MODE_AUTO;
 import static android.provider.MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE;
 
 public class FrontCamera extends SurfaceView implements SurfaceHolder.Callback {
@@ -105,6 +115,8 @@ public class FrontCamera extends SurfaceView implements SurfaceHolder.Callback {
             _camera.stopPreview();
             _camera.setPreviewDisplay(surfaceHolder);
             _camera.startPreview();
+
+
             startFaceDetection();
 
             setViewParameters();
@@ -177,7 +189,8 @@ public class FrontCamera extends SurfaceView implements SurfaceHolder.Callback {
         if (this.getResources().getConfiguration().orientation != Configuration.ORIENTATION_LANDSCAPE) {
             parameters.set("orientation", "portrait");
             _camera.setDisplayOrientation(90);
-            parameters.setRotation(90);
+            parameters.setRotation(270);
+
         } else {
             parameters.set("orientation", "landscape");
             _camera.setDisplayOrientation(0);
@@ -193,10 +206,6 @@ public class FrontCamera extends SurfaceView implements SurfaceHolder.Callback {
         if (params.getMaxNumDetectedFaces() > 0) {
             _camera.startFaceDetection();
         }
-    }
-
-    public Bitmap getDefaultFrame() {
-        return cameraFrame.defaultFrame();
     }
 
     public void takePicture() {
@@ -257,7 +266,7 @@ public class FrontCamera extends SurfaceView implements SurfaceHolder.Callback {
         }
     }
 
-    private Camera.PictureCallback mPicture = new Camera.PictureCallback() {
+    private final Camera.PictureCallback mPicture = new Camera.PictureCallback() {
         @Override
         public void onPictureTaken(byte[] data, Camera camera) {
             pictureCapture = getOutputMediaFile(MEDIA_TYPE_IMAGE);
@@ -271,7 +280,9 @@ public class FrontCamera extends SurfaceView implements SurfaceHolder.Callback {
                 FileOutputStream fos = new FileOutputStream(pictureCapture);
                 fos.write(data);
                 fos.close();
+
                 Log.d(TAG, Uri.fromFile(pictureCapture).toString());
+
             } catch (FileNotFoundException e) {
                 Log.d(TAG, "File not found: " + e.getMessage());
             } catch (IOException e) {
@@ -280,6 +291,26 @@ public class FrontCamera extends SurfaceView implements SurfaceHolder.Callback {
 
         }
     };
+
+    private Bitmap rotateBitmap(Bitmap bitmap) {
+
+        Matrix rotateRight = new Matrix();
+        rotateRight.preRotate(90);
+
+        float[] mirrorY = {-1, 0, 0, 0, 1, 0, 0, 0, 1};
+        rotateRight = new Matrix();
+        Matrix matrixMirrorY = new Matrix();
+        matrixMirrorY.setValues(mirrorY);
+
+        rotateRight.postConcat(matrixMirrorY);
+
+        rotateRight.preRotate(270);
+
+
+        final Bitmap rImg = Bitmap.createBitmap(bitmap, 0, 0,
+                bitmap.getWidth(), bitmap.getHeight(), rotateRight, true);
+        return rImg;
+    }
 
     private static File getOutputMediaFile(int type) {
         File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
