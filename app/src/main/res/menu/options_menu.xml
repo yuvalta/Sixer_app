@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/option_show_hide"
+        android:title="@string/option_show_thresh" />
+
+    <item
+        android:id="@+id/option_reset"
+        android:title="@string/option_reset" />
+
+    <item
+        android:id="@+id/show_centroid"
+        android:title="@string/option_centroid" />
+
+</menu>

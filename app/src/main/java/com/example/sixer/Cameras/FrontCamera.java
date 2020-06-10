@@ -3,11 +3,13 @@ package com.example.sixer.Cameras;
 import android.app.Activity;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
-import android.graphics.ImageFormat;
 import android.graphics.Point;
 import android.hardware.Camera;
+import android.net.Uri;
+import android.os.Environment;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.widget.Toast;
@@ -16,14 +18,21 @@ import com.example.sixer.CameraFrame;
 import com.example.sixer.FrameAnalyzer;
 import com.example.sixer.Activity.MainActivity;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import static android.provider.MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE;
 
 public class FrontCamera extends SurfaceView implements SurfaceHolder.Callback {
 
     public static String TAG = "UV";
     public static int FACE_OFFSET = 1000;
 
-    Camera _camera;
+    public Camera _camera;
     SurfaceHolder surfaceHolder;
     public Camera.Size _size;
     MainActivity _context;
@@ -41,6 +50,8 @@ public class FrontCamera extends SurfaceView implements SurfaceHolder.Callback {
 
     CameraFrame cameraFrame;
     FrameAnalyzer frameAnalyzer;
+
+    File pictureCapture;
 
     boolean isFaceDetected = false;
     public boolean foundCenter = false;
@@ -188,6 +199,20 @@ public class FrontCamera extends SurfaceView implements SurfaceHolder.Callback {
         return cameraFrame.defaultFrame();
     }
 
+    public void takePicture() {
+        _camera.autoFocus(new Camera.AutoFocusCallback() { // auto focus the image
+            @Override
+            public void onAutoFocus(boolean success, Camera camera) {
+                _camera.takePicture(null, null, mPicture);
+            }
+        });
+    }
+
+    public void discardPicture() {
+        pictureCapture.delete();
+        _camera.startPreview();
+    }
+
     class FaceDetectionListener implements Camera.FaceDetectionListener {
         @Override
         public void onFaceDetection(Camera.Face[] faces, Camera camera) {
@@ -232,5 +257,51 @@ public class FrontCamera extends SurfaceView implements SurfaceHolder.Callback {
         }
     }
 
+    private Camera.PictureCallback mPicture = new Camera.PictureCallback() {
+        @Override
+        public void onPictureTaken(byte[] data, Camera camera) {
+            pictureCapture = getOutputMediaFile(MEDIA_TYPE_IMAGE);
+
+            if (pictureCapture == null) {
+                Log.d(TAG, "Error creating media file, check storage permissions");
+                return;
+            }
+
+            try {
+                FileOutputStream fos = new FileOutputStream(pictureCapture);
+                fos.write(data);
+                fos.close();
+                Log.d(TAG, Uri.fromFile(pictureCapture).toString());
+            } catch (FileNotFoundException e) {
+                Log.d(TAG, "File not found: " + e.getMessage());
+            } catch (IOException e) {
+                Log.d(TAG, "Error accessing file: " + e.getMessage());
+            }
+
+        }
+    };
+
+    private static File getOutputMediaFile(int type) {
+        File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_PICTURES), "MyCameraApp");
+
+        if (!mediaStorageDir.exists()) {
+            if (!mediaStorageDir.mkdirs()) {
+                Log.d("MyCameraApp", "failed to create directory");
+                return null;
+            }
+        }
+
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        File mediaFile;
+        if (type == MEDIA_TYPE_IMAGE) {
+            mediaFile = new File(mediaStorageDir.getPath() + File.separator +
+                    "IMG_" + timeStamp + ".jpg");
+        } else {
+            return null;
+        }
+
+        return mediaFile;
+    }
 
 }
