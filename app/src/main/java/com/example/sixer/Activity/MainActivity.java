@@ -22,12 +22,16 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.ShareActionProvider;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.FileProvider;
+import androidx.core.view.MenuItemCompat;
 
+import com.example.sixer.BuildConfig;
 import com.example.sixer.Cameras.BackCamera;
 import com.example.sixer.Cameras.FrontCamera;
 import com.example.sixer.R;
@@ -126,6 +130,18 @@ public class MainActivity extends AppCompatActivity {
         } else {
             showCameras();
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        showCameras();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        showHideViews(false); // back to analyse mode
     }
 
     @Override
@@ -232,7 +248,7 @@ public class MainActivity extends AppCompatActivity {
     View.OnClickListener shareButtonClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            Toast.makeText(MainActivity.this, "share", Toast.LENGTH_SHORT).show();
+            doShare();
         }
     };
 
@@ -251,6 +267,21 @@ public class MainActivity extends AppCompatActivity {
             resetBestPosition();
         }
     };
+
+    public void doShare() {
+
+        File image = frontCameraActivity.getPictureCapture();
+        Intent sendIntent = new Intent();
+        sendIntent.setAction(Intent.ACTION_SEND);
+        sendIntent.putExtra(Intent.EXTRA_STREAM, FileProvider.getUriForFile(this,
+                BuildConfig.APPLICATION_ID + ".provider",
+                image));
+        sendIntent.setType("image/jpeg");
+
+        Intent shareIntent = Intent.createChooser(sendIntent, "Share image to...");
+        startActivity(shareIntent);
+    }
+
 
     @Override
     public void onBackPressed() {

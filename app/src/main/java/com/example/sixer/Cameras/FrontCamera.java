@@ -283,7 +283,7 @@ public class FrontCamera extends SurfaceView implements SurfaceHolder.Callback {
 
     private static File getOutputMediaFile(int type) {
         File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_PICTURES), "MyCameraApp");
+                Environment.DIRECTORY_PICTURES), "SixerApp");
 
         if (!mediaStorageDir.exists()) {
             if (!mediaStorageDir.mkdirs()) {
@@ -304,4 +304,7 @@ public class FrontCamera extends SurfaceView implements SurfaceHolder.Callback {
         return mediaFile;
     }
 
+    public File getPictureCapture() {
+        return pictureCapture;
+    }
 }
