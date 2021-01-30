@@ -11,7 +11,7 @@ import android.widget.Toast;
 
 import com.example.sixer.CameraFrame;
 import com.example.sixer.FrameAnalyzer;
-import com.example.sixer.MainActivity;
+import com.example.sixer.Activity.MainActivity;
 
 import java.io.IOException;
 

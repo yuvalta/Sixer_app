@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity"
+    tools:context=".Activity.MainActivity"
     android:orientation="vertical">
 
     <FrameLayout
@@ -13,13 +13,62 @@
         android:layout_weight="1"
         android:layout_marginBottom="10dp">
 
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/take_picture_fab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center"
+            android:src="@drawable/camera"
+            app:fabSize="normal"
+            android:elevation="100dp"
+            android:layout_margin="16dp" />
 
         <FrameLayout
+            android:soundEffectsEnabled="true"
+            android:keepScreenOn="true"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:id="@+id/front_camera" />
 
+        <LinearLayout
+            android:visibility="invisible"
+            android:layout_marginBottom="25dp"
+            android:layout_gravity="bottom"
+            android:id="@+id/bottom_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:background="@android:color/transparent"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:layout_marginHorizontal="30dp"
+                android:background="@drawable/button_background"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/share"
+                android:id="@+id/share_button" />
+
+            <ImageButton
+                android:layout_marginHorizontal="30dp"
+                android:background="@drawable/button_background"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/file_download"
+                android:id="@+id/save_button" />
+
+            <ImageButton
+                android:layout_marginHorizontal="30dp"
+                android:background="@drawable/button_background"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/delete"
+                android:id="@+id/delete_button" />
+
+        </LinearLayout>
+
         <GridLayout
+            android:id="@+id/arrows_grid"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:rowCount="3"
@@ -83,6 +132,8 @@
     </FrameLayout>
 
     <LinearLayout
+        android:id="@+id/threshold_layout"
+        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_weight="4"
@@ -98,13 +149,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:checked="false" />
-
-            <ImageButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/redo"
-                android:id="@+id/reset"
-                android:onClick="resetBestPosition"/>
 
         </LinearLayout>
 

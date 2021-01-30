@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">Sixer</string>
+    <string name="title_activity_picture_preview">PicturePreviewActivity</string>
+    <string name="nav_share">Share</string>
+    <string name="nav_save">Save</string>
+    <string name="nav_delete">Delete</string>
+    <string name="option_show_thresh">Show Threshold</string>
+    <string name="option_hide_thresh">Hide Threshold</string>
+    <string name="option_reset">Reset center</string>
+    <string name="option_centroid">Show centroid</string>
 </resources>
